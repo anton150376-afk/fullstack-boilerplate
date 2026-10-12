@@ -31,7 +31,7 @@ jobs:
         env:
           EXPO_PUBLIC_API_URL: https://api.example.test
       - name: Загрузить артефакт веб-экспорта
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mobile-web-export
           path: apps/mobile/dist
