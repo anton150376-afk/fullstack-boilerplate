@@ -7,7 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "boilerplatemobile",
     "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.example.boilerplate"
+    },
     "android": {
+      "package": "com.example.boilerplate",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
