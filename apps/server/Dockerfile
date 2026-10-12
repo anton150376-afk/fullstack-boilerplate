@@ -8,7 +8,7 @@
 # Образы api и worker собраны, запущены и проходят healthcheck в составе
 # docker-compose.yml (Codespace, 2026-10-12, scripts/compose-check.sh).
 
-FROM node:22.22-slim AS base
+FROM node:22.23-slim AS base
 RUN corepack enable
 WORKDIR /app
 
