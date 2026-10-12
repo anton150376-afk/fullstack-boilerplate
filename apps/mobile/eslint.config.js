@@ -9,6 +9,16 @@ export default [
   // линтере (тот же класс проблемы, что apps/web/server-entry.mjs — Фаза 6).
   // scripts/generate-types.mjs — служебный Node-скрипт вне tsconfig проекта
   // (turbo, задача generate:types).
-  { ignores: [".expo/**", "uniwind-env.d.ts", "metro.config.js", "scripts/**"] },
+  // android/ и ios/ — native-проекты, которые генерирует expo prebuild (в .gitignore).
+  {
+    ignores: [
+      ".expo/**",
+      "android/**",
+      "ios/**",
+      "uniwind-env.d.ts",
+      "metro.config.js",
+      "scripts/**",
+    ],
+  },
   ...native,
 ];

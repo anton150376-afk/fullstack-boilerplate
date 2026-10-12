@@ -166,6 +166,48 @@ online до первого события, даже если сеть выклю
 и крупные медиафайлы валят приложение. Старый `FileSystem.uploadAsync`
 не используется — объявлен устаревшим.
 
+## Сборка и запуск на телефоне (Android, Windows)
+
+Проверено 2026-10-12 на Windows 11 и телефоне с Android 16 (arm64). iOS на Windows не собрать:
+нужен Mac с Xcode или облачная сборка EAS.
+
+Нужны JDK 17, Android SDK (платформы 35 и 36, build-tools, NDK 27.1, CMake 3.22; Android Studio не
+обязательна), `adb` из `platform-tools`, телефон с включённой «Отладкой по USB». Эмулятору нужна
+виртуализация, физический телефон обходится без неё.
+
+```bash
+cd apps/mobile
+npx expo prebuild --platform android --no-install        # создаёт android/ (в .gitignore)
+cd android && ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a   # только arm64: втрое быстрее
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb reverse tcp:3000 tcp:3000 && adb reverse tcp:8081 tcp:8081   # телефон видит localhost компьютера
+EXPO_PUBLIC_API_URL=http://localhost:3000 npx expo start         # Metro; затем открыть приложение на телефоне
+```
+
+Debug-сборка берёт JavaScript из Metro, поэтому Metro и API (`pnpm --filter server dev` или собранный
+сервер) должны работать, а `adb reverse` — действовать (он сбрасывается при перезапуске `adb`). Первая
+сборка Gradle занимает 15–20 минут, JavaScript — ещё 1–2.
+
+Подвохи этого пути (все найдены реальной сборкой):
+
+- **Длина пути на Windows.** CMake раскладывает объектные файлы по зеркалу абсолютного пути исходника, и
+  в папке вроде `C:\Users\...\Desktop\<репозиторий>` с раскладкой pnpm
+  (`node_modules/.pnpm/<пакет>@<версия>_<хеш>/...`) путь выходит за 250 символов:
+  `ninja: error: manifest 'build.ninja' still dirty`. Собирайте из короткого каталога (`C:\bp`) и поставьте
+  зависимости плоской раскладкой: `nodeLinker: hoisted` в локальном `pnpm-workspace.yaml` этой копии (в
+  репозиторий не коммитится).
+- **Metro без слежения за файлами.** `CI=1` отключает watch: правки файлов не доходят до телефона, Metro
+  отвечает «Unable to resolve module» на новые файлы. Запускайте `expo start` без `CI`.
+- **Экран телефона.** Если он погас, `screencap` отдаёт чёрный кадр, а нажатия уходят на экран блокировки.
+  Перед любым `adb shell input` проверяйте, что на переднем плане наше приложение
+  (`adb shell dumpsys window | grep mCurrentFocus`), и берите координаты элементов из `uiautomator dump`, а не
+  из головы: нажатия «вслепую» попадают в чужие приложения.
+
+Запуск на устройстве нашёл два дефекта, которых не видел Jest: экран приходил пустым (нет
+`import "../global.css"` в `src/app/_layout.tsx`, без него Uniwind не применяет `className`) и список
+заметок не обновлялся после создания (`src/app/index.tsx` не сбрасывал кеш запроса). Оба исправлены и
+закрыты тестами (`src/root-layout.test.ts`, `src/notes-screen.test.tsx`).
+
 ## Веб-развёртка
 
 `pnpm --filter mobile build:web` (`expo export -p web`) — статическая

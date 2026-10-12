@@ -1,3 +1,9 @@
+// Без этого импорта классы Uniwind (className) не применяются: корневой View
+// остаётся без flex-1, контейнер навигатора схлопывается до нулевой высоты, и
+// экран приходит пустым. Найдено запуском на настоящем телефоне; Jest этого не
+// видит, поэтому есть src/root-layout.test.ts.
+import "../global.css";
+
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { Suspense, useEffect, useMemo, useState } from "react";

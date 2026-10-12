@@ -1,4 +1,4 @@
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,12 +15,16 @@ import { api } from "../lib/api.js";
 export default function NotesScreen() {
   const { t } = useTranslation("notes");
   const { data: notes } = useSuspenseQuery(api.notes.list.queryOptions());
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
   const createNote = useMutation(
     api.notes.create.mutationOptions({
       onSuccess: () => {
+        // Как в apps/web: без этого созданная заметка уходила на сервер, а список
+        // и счётчик оставались прежними до перезапуска (найдено на телефоне).
+        void queryClient.invalidateQueries({ queryKey: api.notes.list.queryKey() });
         setTitle("");
         setBody("");
       },
