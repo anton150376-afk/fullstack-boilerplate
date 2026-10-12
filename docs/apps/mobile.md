@@ -203,6 +203,10 @@ Debug-сборка берёт JavaScript из Metro, поэтому Metro и API
   (`adb shell dumpsys window | grep mCurrentFocus`), и берите координаты элементов из `uiautomator dump`, а не
   из головы: нажатия «вслепую» попадают в чужие приложения.
 
+Готовую debug-сборку можно скачать из CI: артефакт `android-debug-apk` задачи `android-build`
+(`.github/workflows/mobile.yml`, на push в `main` и pull request, которые трогают мобильное приложение):
+тогда собирать самому не нужно, достаточно `adb install` и Metro с API.
+
 Запуск на устройстве нашёл два дефекта, которых не видел Jest: экран приходил пустым (нет
 `import "../global.css"` в `src/app/_layout.tsx`, без него Uniwind не применяет `className`) и список
 заметок не обновлялся после создания (`src/app/index.tsx` не сбрасывал кеш запроса). Оба исправлены и

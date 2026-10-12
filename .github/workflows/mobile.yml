@@ -1,13 +1,33 @@
 name: Mobile
 
-# Непроверено вживую (docs/BACKLOG.md, B-261008-no-remote-repo).
+# Сборка debug-APK Android (задача android-build) проверена локально на Windows и на настоящем
+# телефоне (2026-10-12, docs/apps/mobile.md, «Сборка и запуск на телефоне»); в GitHub Actions
+# она ещё не запускалась (docs/BACKLOG.md, B-261012-android-ci-unverified).
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/ui-native/**"
+      - "packages/ui-core/**"
+      - "packages/i18n/**"
+      - "packages/api-client/**"
+      - "packages/contract/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/mobile.yml"
   pull_request:
     paths:
       - "apps/mobile/**"
       - "packages/ui-native/**"
       - "packages/ui-core/**"
+      - "packages/i18n/**"
+      - "packages/api-client/**"
+      - "packages/contract/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/mobile.yml"
   workflow_dispatch:
     inputs:
       platform:
@@ -35,6 +55,52 @@ jobs:
         with:
           name: mobile-web-export
           path: apps/mobile/dist
+          retention-days: 14
+
+  # Сборка debug-APK для Android: ловит то, чего не видят Jest и веб-экспорт, а именно ошибки
+  # native-сборки (Gradle, CMake, версии NDK) и несовместимость версий Expo SDK и React Native.
+  # Только arm64-v8a: так сборка втрое быстрее, а этого хватает почти всем современным
+  # телефонам. Debug-APK берёт JavaScript из Metro, поэтому сам по себе без `expo start` не
+  # запускается — артефакт нужен, чтобы установить его на телефон (docs/apps/mobile.md).
+  android-build:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      EXPO_PUBLIC_API_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      # Те же версии, что на машине разработчика (NDK 27.1, CMake 3.22): раннер несёт свои, а
+      # Gradle без нужных скачивает их посреди сборки и теряет минуты.
+      - name: Компоненты Android SDK
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006" "cmake;3.22.1"
+      - name: Кеш Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/app.json') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - name: Генерация native-проекта (expo prebuild)
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform android --no-install
+      - name: Сборка debug-APK (arm64-v8a)
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon --console=plain
+      - name: Загрузить APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-debug-apk
+          path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 
   eas-build:

@@ -46,10 +46,11 @@
 - **`docker.yml`** — сборка и публикация образов (`server-api`,
   `server-worker`, `web`, `mobile-web`) в GitHub Container Registry при
   push в `main` или по тегу.
-- **`mobile.yml`** — веб-экспорт `apps/mobile` артефактом на каждый
-  pull request, который трогает мобильное приложение; нативная сборка
-  через EAS — только по ручному запуску (`workflow_dispatch`), требует
-  `EAS_TOKEN`.
+- **`mobile.yml`** — на push в `main` и pull request, которые трогают мобильное приложение или то,
+  от чего оно зависит: `android-build` (debug-APK под arm64 через `expo prebuild` и Gradle, артефакт
+  `android-debug-apk`, 20–30 минут; ловит ошибки native-сборки, которых не видят Jest и веб-экспорт)
+  и `web-export` (веб-экспорт артефактом, только на pull request). Нативная сборка через EAS — только
+  по ручному запуску (`workflow_dispatch`), требует `EAS_TOKEN`.
 - **`release.yml`** — по тегу `v*`: вызывает `ci.yml` и `docker.yml` как
   reusable workflows (один и тот же гейт, не копия шагов), затем
   черновик описания выпуска.
