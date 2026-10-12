@@ -1,5 +1,13 @@
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 
 // Раздел "Фаза 12" задания, пункт 12.2.1: создание нового проекта из
@@ -220,6 +228,14 @@ function removeDemoEntity(): void {
     "apps/web/src/routes/admin/notes.tsx",
     "packages/i18n/src/locales/ru/notes.json",
     "packages/i18n/src/locales/en/notes.json",
+    // Тесты и e2e-сценарии, написанные про «Заметки» или про заголовок главной страницы,
+    // которую мастер заменяет заглушкой: без них гейт и Playwright нового проекта падают
+    // на отсутствующих импортах и заголовках (найдено прогоном мастера, 2026-10-12).
+    "apps/mobile/src/notes-screen.test.tsx",
+    "apps/web/src/routes/admin/notes.test.tsx",
+    "apps/web/src/routes/index.test.tsx",
+    "apps/web/e2e/notes.spec.ts",
+    "apps/web/e2e/language.spec.ts",
   ];
 
   const anyExists = demoDirsAndFiles.some((relative) => existsSync(join(ROOT, relative)));
@@ -247,13 +263,18 @@ function removeDemoEntity(): void {
       .replace(/export \* from "\.\/notes\.contract\.js";\n/, ""),
   );
 
+  // Записи `notes: enNotes` бывают и в одну строку (`, notes: enNotes`), и столбцом после
+  // Prettier (`    notes: enNotes,` отдельной строкой). Прежняя правка знала только первую
+  // форму и оставляла в resources.ts ссылки на удалённые переменные: гейт нового проекта
+  // падал в линте i18n (найдено пробным прогоном мастера на Windows, 2026-10-12).
   patchFile(join(ROOT, "packages/i18n/src/resources.ts"), (content) =>
     content
       .replace(/import enNotes from "\.\/locales\/en\/notes\.json" with \{ type: "json" \};\n/, "")
       .replace(/import ruNotes from "\.\/locales\/ru\/notes\.json" with \{ type: "json" \};\n/, "")
-      .replace(/, notes: enNotes/, "")
-      .replace(/, notes: ruNotes/, ""),
+      .replace(/^[ \t]*notes: (?:en|ru)Notes,?[ \t]*\n/gm, "")
+      .replace(/, notes: (?:en|ru)Notes/g, ""),
   );
+  assertNoMatch("packages/i18n/src/resources.ts", /(?:en|ru)Notes/);
 
   patchFile(join(ROOT, "apps/web/src/routes/admin/index.tsx"), (content) =>
     content.replace('to: "/admin/notes"', 'to: "/admin/system"'),
@@ -262,6 +283,58 @@ function removeDemoEntity(): void {
   patchFile(join(ROOT, "apps/server/prisma.config.ts"), (content) =>
     content.replace(/\s*seed: "tsx prisma\/seed-demo\.ts",\n/, "\n"),
   );
+
+  // Реестр ресурсов админки: остаётся только «Задачи».
+  patchFile(join(ROOT, "apps/web/src/routes/admin.tsx"), (content) =>
+    content
+      .replace(/^[ \t]*const \{ t: tNotes \} = useTranslation\("notes"\);\n/m, "")
+      .replace(/^[ \t]*const notesTitle = tNotes\("title"\);\n/m, "")
+      .replace(
+        /^[ \t]*defineResource<\{ id: string \}>\(\{\n[ \t]*name: "notes",[\s\S]*?\n[ \t]*\}\),\n/m,
+        "",
+      )
+      .replace("[notesTitle, tasksTitle]", "[tasksTitle]"),
+  );
+  assertNoMatch("apps/web/src/routes/admin.tsx", /tNotes|notesTitle|name: "notes"/);
+
+  // Интеграционные тесты хранилища: блок про NotesRepository и его подготовка.
+  patchFile(join(ROOT, "apps/server/test/db.integration-spec.ts"), (content) =>
+    content
+      .replace(/^import \{ NotesRepository \} from "[^"]+";\n/m, "")
+      .replace(/^[ \t]*let notes: NotesRepository;\n/m, "")
+      .replace(/^[ \t]*notes = new NotesRepository\(service\);\n/m, "")
+      .replace(/^[ \t]*await prisma\.note\.deleteMany\(\{\}\);\n/m, "")
+      .replace(/\n {2}describe\("NotesRepository", \(\) => \{[\s\S]*?\n {2}\}\);\n/, ""),
+  );
+  assertNoMatch("apps/server/test/db.integration-spec.ts", /Notes?Repository|prisma\.note|notes\./);
+
+  patchFile(join(ROOT, "apps/server/test/openapi.e2e-spec.ts"), (content) =>
+    content.replace('toHaveProperty("/notes")', 'toHaveProperty("/tasks")'),
+  );
+  assertNoMatch("apps/server/test/openapi.e2e-spec.ts", /"\/notes"/);
+
+  // Дымовой скрипт API: шаг «заметка» (вставка в базу и постановка в очередь).
+  patchFile(join(ROOT, "scripts/smoke-api.sh"), (content) =>
+    content.replace(/# 3\. заметка[^\n]*\n(?:[^\n]+\n)+\n/, ""),
+  );
+  assertNoMatch("scripts/smoke-api.sh", /\/notes/);
+
+  // Пункт меню главной страницы назывался «Заметки»: переименовывается в «Главная».
+  for (const relative of [
+    "apps/web/src/routes/__root.tsx",
+    "packages/i18n/src/init.test.ts",
+    "packages/i18n/src/locales/en/common.json",
+    "packages/i18n/src/locales/ru/common.json",
+  ]) {
+    patchFile(join(ROOT, relative), (content) =>
+      content
+        .replace(/navNotes/g, "navHome")
+        .replace('"navHome": "Notes"', '"navHome": "Home",\n  "welcome": "Welcome"')
+        .replace('"navHome": "Заметки"', '"navHome": "Главная",\n  "welcome": "Добро пожаловать"')
+        .replace('toBe("Заметки")', 'toBe("Главная")'),
+    );
+    assertNoMatch(relative, /navNotes/);
+  }
 
   const serverPackageJsonPath = join(ROOT, "apps/server/package.json");
   if (existsSync(serverPackageJsonPath)) {
@@ -285,24 +358,80 @@ function patchFile(path: string, transform: (content: string) => string): void {
   if (updated !== original) writeFileSync(path, updated, "utf8");
 }
 
+// Правка файла считается удавшейся, только если в нём не осталось следов удалённого:
+// молчаливо оставленные ссылки на удалённые переменные ломали гейт нового проекта.
+function assertNoMatch(relative: string, pattern: RegExp): void {
+  const path = join(ROOT, relative);
+  if (!existsSync(path)) return;
+  if (pattern.test(readFileSync(path, "utf8"))) {
+    throw new Error(
+      `init-project: в ${relative} после очистки остались следы удалённого (${String(pattern)}) — ` +
+        "правка не сработала на этой раскладке файла, поправьте вручную и перезапустите",
+    );
+  }
+}
+
 function writeHomePagePlaceholder(): void {
   const webIndex = join(ROOT, "apps/web/src/routes/index.tsx");
   if (existsSync(webIndex)) {
     writeFileSync(
       webIndex,
-      `import { createFileRoute } from "@tanstack/react-router";\n\nimport { LanguageSwitcher } from "../components/language-switcher.js";\n\nexport const Route = createFileRoute("/")({\n  component: HomePage,\n});\n\nfunction HomePage() {\n  return (\n    <main className="mx-auto max-w-xl space-y-4 p-6">\n      <div className="flex items-center justify-between">\n        <h1 className="text-2xl font-semibold text-foreground">Добро пожаловать</h1>\n        <LanguageSwitcher />\n      </div>\n    </main>\n  );\n}\n`,
+      [
+        'import { createFileRoute } from "@tanstack/react-router";',
+        'import { useTranslation } from "react-i18next";',
+        "",
+        'import { LanguageSwitcher } from "../components/language-switcher.js";',
+        "",
+        'export const Route = createFileRoute("/")({',
+        "  component: HomePage,",
+        "});",
+        "",
+        "function HomePage() {",
+        "  const { t } = useTranslation();",
+        "",
+        "  return (",
+        '    <main className="mx-auto max-w-xl space-y-4 p-6">',
+        '      <div className="flex items-center justify-between">',
+        '        <h1 className="text-2xl font-semibold text-foreground">{t("welcome")}</h1>',
+        "        <LanguageSwitcher />",
+        "      </div>",
+        "    </main>",
+        "  );",
+        "}",
+        "",
+      ].join("\n"),
       "utf8",
     );
   }
-
-  const webIndexTest = join(ROOT, "apps/web/src/routes/index.test.tsx");
-  if (existsSync(webIndexTest)) rmSync(webIndexTest, { force: true });
 
   const mobileIndex = join(ROOT, "apps/mobile/src/app/index.tsx");
   if (existsSync(mobileIndex)) {
     writeFileSync(
       mobileIndex,
-      `import { Link } from "expo-router";\nimport { Text, View } from "react-native";\n\nimport { LanguageSwitcher } from "../components/language-switcher.js";\n\nexport default function HomeScreen() {\n  return (\n    <View className="flex-1 gap-4 bg-background p-6">\n      <View className="flex flex-row items-center justify-between">\n        <Text className="text-2xl font-semibold text-foreground">Добро пожаловать</Text>\n        <LanguageSwitcher />\n      </View>\n      <Link href="/files">\n        <Text className="text-primary">{"Файлы"}</Text>\n      </Link>\n    </View>\n  );\n}\n`,
+      [
+        'import { Link } from "expo-router";',
+        'import { useTranslation } from "react-i18next";',
+        'import { Text, View } from "react-native";',
+        "",
+        'import { LanguageSwitcher } from "../components/language-switcher.js";',
+        "",
+        "export default function HomeScreen() {",
+        "  const { t } = useTranslation();",
+        "",
+        "  return (",
+        '    <View className="flex-1 gap-4 bg-background p-6">',
+        '      <View className="flex flex-row items-center justify-between">',
+        '        <Text className="text-2xl font-semibold text-foreground">{t("welcome")}</Text>',
+        "        <LanguageSwitcher />",
+        "      </View>",
+        '      <Link href="/files">',
+        '        <Text className="text-primary">{t("navFiles")}</Text>',
+        "      </Link>",
+        "    </View>",
+        "  );",
+        "}",
+        "",
+      ].join("\n"),
       "utf8",
     );
   }
@@ -350,6 +479,19 @@ function resetDecisions(): void {
       .join("\n"),
   );
 
+  // Ссылки на удалённые ADR есть и в других документах (ADR-0001-stack.md, versions.md):
+  // check:docs нового проекта падал на «битая ссылка на ADR-0003-...» (найдено прогоном
+  // мастера, 2026-10-12). Ссылка заменяется её текстом, чтобы не терять смысл фразы.
+  const escaped = files.map((file) => file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const brokenLink = new RegExp(
+    `\\[([^\\]]+)\\]\\([^)\\s]*(?:${escaped.join("|")})(?:#[^)]*)?\\)`,
+    "g",
+  );
+  for (const path of findScopedTextFiles()) {
+    if (!path.endsWith(".md")) continue;
+    patchFile(path, (content) => content.replace(brokenLink, "$1"));
+  }
+
   console.log(`[decisions] убрано ${files.length} ADR, оставлены решения о стеке`);
 }
 
@@ -357,10 +499,10 @@ const FIRST_COMMIT_MESSAGE = "Начало проекта из boilerplate";
 
 function resetGitHistory(): void {
   const gitDir = join(ROOT, ".git");
-  if (!existsSync(gitDir)) {
-    console.log("[git] .git уже нет — пропущено");
-    return;
-  }
+  // Копия без .git (скачанный ZIP, архив) — не повод пропускать шаг: гейту нужен репозиторий
+  // (`turbo run test --filter ...[HEAD]` падает с «not part of a Git repository»; найдено
+  // прогоном мастера на копии без .git, 2026-10-12). Репозиторий создаётся с первого коммита.
+  const hadGitDir = existsSync(gitDir);
 
   // Единственный шаг без проверки "уже сделано" стирал историю ПОВТОРНО
   // при каждом запуске — любой коммит, сделанный после первого запуска,
@@ -373,22 +515,24 @@ function resetGitHistory(): void {
   // не только повторный ручной запуск), счётчик коммитов перестаёт быть
   // 1, и скрипт снова стирал всё. Правильная проверка — КОРНЕВОЙ коммит
   // истории, независимо от того, сколько коммитов сделано после него.
-  try {
-    const firstMessage = execSync("git log --format=%s --reverse", {
-      cwd: ROOT,
-      encoding: "utf8",
-    })
-      .split("\n")[0]
-      ?.trim();
-    if (firstMessage === FIRST_COMMIT_MESSAGE) {
-      console.log("[git] история уже сброшена этим скриптом — пропущено");
-      return;
+  if (hadGitDir) {
+    try {
+      const firstMessage = execSync("git log --format=%s --reverse", {
+        cwd: ROOT,
+        encoding: "utf8",
+      })
+        .split("\n")[0]
+        ?.trim();
+      if (firstMessage === FIRST_COMMIT_MESSAGE) {
+        console.log("[git] история уже сброшена этим скриптом — пропущено");
+        return;
+      }
+    } catch {
+      // HEAD не резолвится — репозиторий без коммитов, сбрасываем как обычно ниже.
     }
-  } catch {
-    // HEAD не резолвится — репозиторий без коммитов, сбрасываем как обычно ниже.
   }
 
-  rmSync(gitDir, { recursive: true, force: true });
+  if (hadGitDir) rmSync(gitDir, { recursive: true, force: true });
   execSync("git init", { cwd: ROOT, stdio: "inherit" });
   execSync("git add -A", { cwd: ROOT, stdio: "inherit" });
   execSync(`git commit -m "${FIRST_COMMIT_MESSAGE}"`, { cwd: ROOT, stdio: "inherit" });
@@ -402,7 +546,57 @@ function resetGitHistory(): void {
 // здесь format:check упал бы уже в gate — но тогда right после "первого
 // коммита" репозиторий сразу оказался бы грязным. Переформатировать нужно
 // ДО коммита, не после.
+// Если зависимости уже стояли до переименования scope, в node_modules остаются связи со
+// старыми именами пакетов воркспейса. На Windows pnpm не может их убрать (EPERM при
+// rmdir node_modules/.pnpm/node_modules/@boilerplate), и установка падает. Поэтому устаревшие
+// node_modules стираются до установки: pnpm всё равно ставит их заново, из своего хранилища.
+// Надёжнее всего запускать мастер на свежей копии до pnpm install (README.md).
+function removeStaleNodeModules(): void {
+  const roots = ["", "apps", "packages"];
+  const candidates: string[] = [];
+  for (const base of roots) {
+    const dir = join(ROOT, base);
+    if (!existsSync(dir)) continue;
+    if (base === "") {
+      candidates.push(join(dir, "node_modules"));
+      continue;
+    }
+    for (const entry of readdirSync(dir)) candidates.push(join(dir, entry, "node_modules"));
+  }
+  const stale = candidates.filter((path) => existsSync(path));
+  if (stale.length === 0) return;
+  console.log(
+    `[install] удаляю устаревшие node_modules (${String(stale.length)}) перед установкой`,
+  );
+  for (const path of stale) {
+    try {
+      rmSync(path, { recursive: true, force: true });
+    } catch (error) {
+      console.warn(
+        `[install] не удалось удалить ${path}: ${(error as Error).message}; ` +
+          "если установка упадёт, запустите мастер на свежей копии без node_modules",
+      );
+    }
+  }
+}
+
+// Файлы .env в git не попадают, а гейту они нужны уже на lint: `prisma generate` читает
+// DATABASE_URL из apps/server/.env. На свежей копии их нет — создаём из .env.example тем же
+// шагом, что в README ("cp .env.example .env && cp .env.example apps/server/.env").
+// Существующие файлы не трогаем.
+function prepareEnvFiles(): void {
+  const example = join(ROOT, ".env.example");
+  if (!existsSync(example)) return;
+  for (const target of [".env", "apps/server/.env"]) {
+    const path = join(ROOT, target);
+    if (existsSync(path)) continue;
+    copyFileSync(example, path);
+    console.log(`[env] создан ${target} из .env.example`);
+  }
+}
+
 function installAndFormat(): void {
+  removeStaleNodeModules();
   console.log("\n[install] pnpm install — может занять несколько минут...");
   execSync("pnpm install", { cwd: ROOT, stdio: "inherit" });
   console.log("\n[format] pnpm format — выравнивание таблиц и разметки после правок выше");
@@ -429,6 +623,7 @@ function main(): void {
   if (options.skipGate) {
     console.log("[install/format] --skip-gate — пропущено");
   } else {
+    prepareEnvFiles();
     installAndFormat();
   }
 

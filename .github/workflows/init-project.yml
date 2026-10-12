@@ -1,0 +1,41 @@
+name: Мастер нового проекта
+
+# Мастер scripts/init-project.ts вырезает из основы демо-сущность «Заметки» точечными правками
+# файлов. Любая новая ссылка на неё (тест, экран, скрипт) делает мастер устаревшим молча:
+# узнаёшь об этом, только когда у нового проекта падает первый же `pnpm gate`. Так и вышло в
+# пробных прогонах 2026-10-12 (остатки в resources.ts, db.integration-spec.ts, admin.tsx).
+#
+# Эта задача каждый раз берёт свежую копию репозитория, прогоняет мастер целиком и требует
+# зелёный `pnpm gate` у получившегося проекта. Репозиторий открытый, минуты Actions бесплатны;
+# при переходе в закрытый её стоит ограничить путями или расписанием.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: init-project-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wizard:
+    name: мастер + gate нового проекта
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Без установки зависимостей: мастер сам делает pnpm install после переименования
+      # пакетов, как у человека, запускающего его на свежей копии (README.md).
+      - name: Node + pnpm
+        uses: pnpm/setup@v1
+        with:
+          runtime: node@22
+          install: false
+          cache: true
+
+      - name: Мастер создания проекта (включая pnpm gate)
+        run: node scripts/init-project.ts --name "Trial App" --no-git-reset
