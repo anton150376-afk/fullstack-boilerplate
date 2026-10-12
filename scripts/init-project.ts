@@ -319,6 +319,32 @@ function removeDemoEntity(): void {
   );
   assertNoMatch("scripts/smoke-api.sh", /\/notes/);
 
+  // Начальная миграция создаёт таблицу notes, хотя модель note.prisma удалена выше: в новом
+  // проекте остался бы дрейф между схемой и миграциями (первый же `prisma migrate dev`
+  // предложил бы её удалить). Новый проект базы ещё не имеет, поэтому таблица убирается из
+  // самой начальной миграции (найдено прогоном мастера на проекте kvant, 2026-10-12).
+  const migrationsDir = join(ROOT, "apps/server/prisma/migrations");
+  if (existsSync(migrationsDir)) {
+    for (const entry of readdirSync(migrationsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || !entry.name.endsWith("_init")) continue;
+      const relative = `apps/server/prisma/migrations/${entry.name}/migration.sql`;
+      patchFile(join(ROOT, relative), (content) =>
+        content.replace(/-- CreateTable\nCREATE TABLE "notes" \(.*?\n\);\n\n/s, ""),
+      );
+      assertNoMatch(relative, /"notes"/);
+    }
+  }
+
+  // Пояснение к TEST_DATABASE_URL перечисляло таблицы, которые чистят тесты, вместе с notes.
+  for (const relative of [".env.example", "docs/operations/env-vars.md"]) {
+    patchFile(join(ROOT, relative), (content) =>
+      content
+        .replace("tasks, notes и uploaded_files", "tasks и uploaded_files")
+        .replace("`tasks`, `notes`, `uploaded_files`", "`tasks` и `uploaded_files`"),
+    );
+    assertNoMatch(relative, /\bnotes\b/);
+  }
+
   // Пункт меню главной страницы назывался «Заметки»: переименовывается в «Главная».
   for (const relative of [
     "apps/web/src/routes/__root.tsx",
