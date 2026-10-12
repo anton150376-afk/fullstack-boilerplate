@@ -31,7 +31,7 @@ jobs:
       # перед публикацией остаётся за человеком, draft: true не публикует
       # автоматически (раздел "Фаза 10" задания, пункт 10.2).
       - name: Черновик релиза
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           generate_release_notes: true
