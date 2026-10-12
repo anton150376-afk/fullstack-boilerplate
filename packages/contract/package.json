@@ -1,0 +1,32 @@
+{
+  "name": "@boilerplate/contract",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "compiled": "./dist/index.js",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint . --cache --cache-location .eslintcache",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@orpc/contract": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@boilerplate/eslint-config": "workspace:*",
+    "@boilerplate/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "10.12.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

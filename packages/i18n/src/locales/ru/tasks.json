@@ -1,0 +1,12 @@
+{
+  "addButton": "Добавить",
+  "count_few": "{{count}} задачи",
+  "count_many": "{{count}} задач",
+  "count_one": "{{count}} задача",
+  "count_other": "{{count}} задачи",
+  "doneLabel": "Сделано",
+  "emptyLabel": "Задач пока нет",
+  "removeButton": "Удалить",
+  "title": "Задачи",
+  "titleLabel": "Название"
+}

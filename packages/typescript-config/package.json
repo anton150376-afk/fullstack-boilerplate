@@ -1,0 +1,20 @@
+{
+  "name": "@boilerplate/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "files": [
+    "base.json",
+    "node.json",
+    "react.json",
+    "react-native.json",
+    "library.json"
+  ],
+  "exports": {
+    "./base.json": "./base.json",
+    "./node.json": "./node.json",
+    "./react.json": "./react.json",
+    "./react-native.json": "./react-native.json",
+    "./library.json": "./library.json"
+  }
+}

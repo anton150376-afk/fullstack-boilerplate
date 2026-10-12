@@ -1,0 +1,37 @@
+name: Release
+
+# Непроверено вживую (docs/BACKLOG.md, B-261008-no-remote-repo).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  gate:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  docker:
+    needs: [gate]
+    uses: ./.github/workflows/docker.yml
+    secrets: inherit
+
+  draft-release:
+    needs: [docker]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      # Черновик описания выпуска из коммитов между тегами — ревью
+      # перед публикацией остаётся за человеком, draft: true не публикует
+      # автоматически (раздел "Фаза 10" задания, пункт 10.2).
+      - name: Черновик релиза
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true

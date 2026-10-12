@@ -1,0 +1,11 @@
+/// Сквозная проверка шаблона (Фаза 12.3 задания) — отдельная сущность,
+/// не "Заметки" (её снимает scripts/init-project.ts).
+model Task {
+  id        String   @id @default(uuid())
+  title     String
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tasks")
+}

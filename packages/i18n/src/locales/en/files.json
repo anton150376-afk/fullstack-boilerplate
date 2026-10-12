@@ -1,0 +1,7 @@
+{
+  "bytes_one": "{{count}} byte",
+  "bytes_other": "{{count}} bytes",
+  "count_one": "{{count}} file",
+  "count_other": "{{count}} files",
+  "title": "Files"
+}

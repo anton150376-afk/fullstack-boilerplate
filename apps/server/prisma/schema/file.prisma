@@ -1,0 +1,20 @@
+/// Привязка файла к сущности в два шага (раздел "Фаза 4", пункт 8 задания):
+/// запись со статусом ожидания → талон на загрузку → загрузка клиентом →
+/// подтверждение → серверный head() → готовое состояние.
+enum UploadedFileStatus {
+  PENDING
+  READY
+  FAILED
+}
+
+model UploadedFile {
+  id          String             @id @default(uuid())
+  key         String             @unique
+  contentType String
+  size        Int?
+  status      UploadedFileStatus @default(PENDING)
+  createdAt   DateTime           @default(now())
+  confirmedAt DateTime?
+
+  @@map("uploaded_files")
+}

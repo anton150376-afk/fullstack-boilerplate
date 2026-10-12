@@ -1,0 +1,135 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": ["NODE_ENV"],
+  // Границы между пакетами (docs/architecture/monorepo.md, раздел «Границы»).
+  // Теги выставлены в turbo.json каждого приложения и пакета; проверяет
+  // `turbo boundaries` (задача boundaries в CI и в pnpm check:boundaries).
+  "boundaries": {
+    "tags": {
+      // Приложение не импортируют ни другие приложения, ни пакеты.
+      "app": { "dependents": { "deny": ["app", "lib"] } },
+      "lib": {},
+      // Платформы не смешиваются: веб не тянет нативный код и серверный,
+      // нативный — веб и серверный, сервер — клиентский.
+      "platform-web": { "dependencies": { "deny": ["platform-native", "platform-node"] } },
+      "platform-native": { "dependencies": { "deny": ["platform-web", "platform-node"] } },
+      "platform-node": { "dependencies": { "deny": ["platform-web", "platform-native"] } },
+      // Общий код (контракт, ui-core, i18n, api-client, devtools) не знает,
+      // под какой платформой запущен, и не зависит ни от одной из них.
+      "platform-agnostic": {
+        "dependencies": { "deny": ["platform-web", "platform-native", "platform-node"] }
+      }
+    }
+  },
+  "tasks": {
+    "db:generate": {
+      "inputs": ["prisma/schema/**", "prisma.config.ts"],
+      "outputs": ["src/generated/**"],
+      "env": ["DATABASE_URL"]
+    },
+    // Только у apps/mobile: создаёт expo-env.d.ts и uniwind-env.d.ts, которые
+    // иначе появляются лишь после первого запуска Metro (оба в .gitignore).
+    // Без них на свежем клоне типизированный линт видит `any` вместо типов
+    // process.env.EXPO_PUBLIC_* и падает. У остальных пакетов скрипта нет, и
+    // turbo пропускает зависимость.
+    "generate:types": {
+      "inputs": ["src/global.css", "scripts/generate-types.mjs", "package.json"],
+      "outputs": ["expo-env.d.ts", "uniwind-env.d.ts"]
+    },
+    "build": {
+      "dependsOn": ["^build", "db:generate"],
+      "inputs": ["src/**", "package.json", "tsconfig*.json"],
+      "outputs": ["dist/**", ".output/**", ".next/**"],
+      // vite.config.ts (apps/web) и Metro (apps/mobile) читают эти
+      // переменные прямо в process.env при сборке и впекают значение в
+      // бандл (раздел "Фаза 9" задания, git SHA/версия/флаг кнопки
+      // багрепорта) — без объявления здесь турбо не видит эту
+      // зависимость и может отдать из кеша сборку с устаревшим значением
+      // (раздел "Фаза 10" задания, пункт 10.2: "переменные окружения,
+      // влияющие на сборку, объявлены в turbo.json").
+      "env": [
+        "VITE_API_URL",
+        "VITE_ENABLE_BUG_REPORTS",
+        "VITE_GIT_SHA",
+        "VITE_BUILD_VERSION",
+        "EXPO_PUBLIC_API_URL",
+        "EXPO_PUBLIC_ENABLE_BUG_REPORTS",
+        "EXPO_PUBLIC_GIT_SHA",
+        "EXPO_PUBLIC_BUILD_VERSION"
+      ]
+    },
+    "lint": {
+      // "build" (без "^") — своя сборка пакета, не только пакетов-зависимостей:
+      // apps/web генерирует src/routeTree.gen.ts плагином @tanstack/router
+      // внутри vite build, а этот файл в .gitignore и ничем кроме build не
+      // создаётся. Без этой строки линт/тайпчек проходили только потому, что
+      // устаревший routeTree.gen.ts уже случайно лежал на диске с прошлой
+      // сборки — на настоящем свежем экземпляре (раздел "Фаза 12.3" задания,
+      // проверено изолированной копией) падали на "Cannot find module"/
+      // "Property does not exist", и то же самое ждало бы CI (`B-261008-no-remote-repo`
+      // мешает это перепроверить вживую в GitHub Actions, но job "gate" там
+      // чекаутится отдельно от job "build" — без этой строки столкнулся бы
+      // с тем же). "db:generate" здесь по той же причине: типизированный
+      // линт apps/server/prisma/seed-*.ts падал без клиента Prisma тем же
+      // способом (свежая копия, та же проверка). У пакетов без своего
+      // "build"/"db:generate" (большинство) turbo тихо пропускает эту
+      // зависимость, не требуя скрипта с таким именем.
+      "dependsOn": ["^build", "build", "db:generate", "generate:types"],
+      "inputs": ["src/**", "**/*.ts", "**/*.tsx", "eslint.config.*"],
+      "outputs": [".eslintcache"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "build", "db:generate", "generate:types"],
+      "inputs": ["src/**", "**/*.ts", "**/*.tsx", "tsconfig*.json"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build", "build", "db:generate"],
+      "inputs": [
+        "src/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.e2e-spec.ts",
+        "vitest.config.*"
+      ],
+      "outputs": []
+    },
+    "test:coverage": {
+      "dependsOn": ["^build", "build", "db:generate"],
+      "inputs": [
+        "src/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.e2e-spec.ts",
+        "vitest.config.*"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "check:docs": {
+      "inputs": ["docs/**", "**/README.md", "scripts/check-docs.ts"],
+      "outputs": []
+    },
+    "check:backlog": {
+      "inputs": ["docs/BACKLOG.md", "scripts/check-backlog.ts"],
+      "outputs": []
+    },
+    "check:parity": {
+      "inputs": ["packages/ui-web/**", "packages/ui-native/**", "scripts/check-parity.ts"],
+      "outputs": []
+    },
+    "check:i18n": {
+      "inputs": ["packages/i18n/**", "scripts/check-i18n.ts"],
+      "outputs": []
+    },
+    "check:env": {
+      "inputs": [".env.example", "docs/operations/env-vars.md", "scripts/check-env.ts"],
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

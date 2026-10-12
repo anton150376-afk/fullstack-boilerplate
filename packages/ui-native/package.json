@@ -1,0 +1,36 @@
+{
+  "name": "@boilerplate/ui-native",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --cache --cache-location .eslintcache",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@boilerplate/ui-core": "workspace:*",
+    "expo-file-system": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-native": "catalog:"
+  },
+  "devDependencies": {
+    "@boilerplate/eslint-config": "workspace:*",
+    "@boilerplate/typescript-config": "workspace:*",
+    "@testing-library/react-native": "catalog:",
+    "@types/jest": "catalog:",
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "jest-expo": "catalog:",
+    "react": "catalog:",
+    "react-native": "catalog:",
+    "react-test-renderer": "catalog:",
+    "test-renderer": "catalog:",
+    "typescript": "catalog:",
+    "uniwind": "catalog:"
+  }
+}

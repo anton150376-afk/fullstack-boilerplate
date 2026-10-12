@@ -1,0 +1,26 @@
+{
+  "bugReport": {
+    "attachScreenshot": "Attach a screenshot",
+    "cancel": "Cancel",
+    "description": "Description",
+    "expectedBehavior": "Expected behavior",
+    "screenshotAttached": "Screenshot attached",
+    "screenshotAttachedAuto": "Screenshot attached automatically",
+    "stepsToReproduce": "Steps to reproduce",
+    "submit": "Submit",
+    "submitFailed": "Failed to send the report",
+    "success": "Report sent, thank you!",
+    "title": "Report a problem"
+  },
+  "upload": {
+    "confirming": "Confirming…",
+    "fileInput": "File to upload",
+    "networkUnavailable": "Network unavailable — the storage did not respond",
+    "pickFile": "Choose a file",
+    "progress": "Upload progress",
+    "rejected": "The storage rejected the file — check its type and size",
+    "rejectedWithCode": "The storage rejected the upload (code {{status}})",
+    "tooLarge": "The file exceeds the allowed size",
+    "uploadFailed": "Upload failed"
+  }
+}

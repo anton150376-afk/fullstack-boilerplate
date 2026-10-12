@@ -1,0 +1,4 @@
+{
+  "extends": "@boilerplate/typescript-config/react.json",
+  "include": ["src", "vitest.config.ts", "vitest-setup.d.ts"]
+}

@@ -1,0 +1,48 @@
+# Зависимости и артефакты сборки
+node_modules/
+dist/
+.output/
+.turbo/
+coverage/
+*.tsbuildinfo
+.eslintcache
+
+# Генерируется "pnpm db:generate" из prisma/schema — не коммитится
+apps/server/src/generated/
+
+# Генерируется плагином TanStack Router при dev/build — не коммитится
+apps/web/src/routeTree.gen.ts
+
+# Генерируются Expo CLI/Uniwind при первом запуске — не коммитятся
+apps/mobile/expo-env.d.ts
+apps/mobile/uniwind-env.d.ts
+apps/mobile/.expo/
+
+# Секреты
+.env
+.env.*
+!.env.example
+
+# Личные настройки агента и редактора
+.claude/settings.local.json
+.vscode/*.local.json
+
+# Личная настройка локальных контейнеров (раздел 7.9 задания)
+docker-compose.override.yml
+
+# Расходный материал багрепорта (раздел 9.5 задания)
+.bugs/
+
+# Сайт документации (раздел 10.3 задания) — страницы порождаются из
+# репозитория при каждой сборке, не хранятся в git.
+apps/docs/.vitepress/cache/
+docs/generated/
+
+# Логи и прочее
+*.log
+.DS_Store
+Thumbs.db
+
+# Результаты сквозных тестов Playwright
+apps/web/test-results/
+apps/web/playwright-report/

@@ -1,0 +1,13 @@
+{
+  "addButton": "Добавить",
+  "bodyLabel": "Текст",
+  "count_few": "{{count}} заметки",
+  "count_many": "{{count}} заметок",
+  "count_one": "{{count}} заметка",
+  "count_other": "{{count}} заметки",
+  "emptyLabel": "Заметок пока нет",
+  "hideForm": "Скрыть форму",
+  "removeButton": "Удалить",
+  "title": "Заметки",
+  "titleLabel": "Заголовок"
+}

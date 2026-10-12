@@ -1,0 +1,151 @@
+# Проверено в настоящем Docker (Codespace, Docker 29.8, Compose 5.5, 2026-10-12): scripts/compose-check.sh проходит целиком.
+# Что именно и как повторить — docs/guides/docker.md, раздел «Проверка контейнеров».
+name: ${COMPOSE_PROJECT_NAME:-boilerplate}
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    # Образы PostgreSQL 18+ хранят данные в подкаталоге версии внутри
+    # /var/lib/postgresql и отказываются стартовать, если том смонтирован в
+    # /var/lib/postgresql/data (найдено первым запуском в CI). Том должен лежать
+    # на уровень выше — иначе не работает и pg_upgrade --link.
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # S3-совместимое хранилище для разработки — Garage, не MinIO (решение
+  # D16 задания, грабля 28: MinIO заархивирован). Один узел, один
+  # дефолтный бакет и один ключ доступа. --default-bucket — флаг без
+  # значения: Garage v2.4.1 берёт имя бакета и ключ из переменных
+  # GARAGE_DEFAULT_* и без них не стартует (исходники релиза, ServerOpt).
+  # Ключ тот же, что приложения читают из .env как S3_ACCESS_KEY_ID /
+  # S3_SECRET_ACCESS_KEY, поэтому ничего не нужно забирать руками —
+  # docs/guides/docker.md. Порты слушают только loopback: ключ из
+  # .env.example известен всем, кто читал репозиторий.
+  garage:
+    image: dxflrs/garage:v2.4.1
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    environment:
+      GARAGE_DEFAULT_ACCESS_KEY: ${S3_ACCESS_KEY_ID:?Задайте S3_ACCESS_KEY_ID в .env (образец в .env.example)}
+      GARAGE_DEFAULT_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:?Задайте S3_SECRET_ACCESS_KEY в .env (образец в .env.example)}
+      GARAGE_DEFAULT_BUCKET: ${S3_BUCKET:-app-files}
+    ports:
+      - "127.0.0.1:${S3_PORT:-3900}:3900"
+      - "127.0.0.1:3901:3901"
+      - "127.0.0.1:3903:3903"
+    volumes:
+      - garage-data:/data
+      - ./infra/garage/garage.toml:/etc/garage.toml:ro
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+      target: api
+    profiles: ["app"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://app:app@postgres:5432/app
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://garage:3900
+      S3_PUBLIC_ENDPOINT: http://localhost:${S3_PORT:-3900}
+      # Браузер обращается к веб-контейнерам по портам хоста — их и разрешаем.
+      CORS_ORIGINS: http://localhost:${WEB_PORT:-3001},http://localhost:${MOBILE_WEB_PORT:-3002}
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+      target: worker
+    profiles: ["app"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://app:app@postgres:5432/app
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://garage:3900
+      S3_PUBLIC_ENDPOINT: http://localhost:${S3_PORT:-3900}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+
+  # Отдельный профиль ("web", не "app") — раздел "Фаза 6" задания, пункт
+  # 10: веб собирается и запускается независимо от server/worker, можно
+  # поднять только его поверх уже работающего API в другом окружении.
+  # VITE_API_URL встраивается на этапе build (import.meta.env — не
+  # рантайм-переменная Vite), поэтому передаётся через build.args, а не
+  # через environment/env_file, как у server/worker.
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: web
+      args:
+        VITE_API_URL: http://localhost:${PORT:-3000}
+    environment:
+      API_INTERNAL_URL: http://server:3000
+    profiles: ["web"]
+    ports:
+      - "${WEB_PORT:-3001}:3000"
+    depends_on:
+      - server
+
+  # Веб-экспорт apps/mobile — вторичная поверхность (раздел "Фаза 7"
+  # задания, пункт 8), отдельный профиль, не "web" (apps/web — продуктовая
+  # веб-поверхность, обе среды не путать портами по умолчанию).
+  mobile-web:
+    build:
+      context: .
+      dockerfile: apps/mobile/Dockerfile
+      target: mobile-web
+      args:
+        EXPO_PUBLIC_API_URL: http://localhost:${PORT:-3000}
+    profiles: ["mobile-web"]
+    ports:
+      - "${MOBILE_WEB_PORT:-3002}:3000"
+    depends_on:
+      - server
+
+volumes:
+  postgres-data:
+  redis-data:
+  garage-data:

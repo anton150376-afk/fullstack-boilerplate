@@ -1,0 +1,48 @@
+name: Claude
+
+# Непроверено вживую (docs/BACKLOG.md, B-261008-no-remote-repo). Все шаги
+# условны по наличию ANTHROPIC_API_KEY (раздел "Фаза 10" задания, пункт
+# 10.2) — без секрета шаги пропускаются, форки и PR без доступа
+# к секретам репозитория не падают. Подробности про токен подписки
+# (привязан к человеку, не годится для общего использования) и про то,
+# что штатный GITHUB_TOKEN не запускает CI на коммитах агента —
+# docs/operations/ci.md.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+
+jobs:
+  claude:
+    # Запускать только по упоминанию @claude: иначе каждый комментарий (в том числе
+    # служебные от Dependabot) стартовал бы раннер впустую и тратил минуты Actions —
+    # за сутки их набежало 30 пустых запусков. Условие без secrets (в if их нет).
+    if: >-
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name != 'pull_request_review' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    # Без секрета шаги пропускаются (контекст secrets недоступен в `if` — проверка
+    # идёт через env, иначе GitHub отвергает файл целиком).
+    env:
+      HAS_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        if: env.HAS_ANTHROPIC_API_KEY == 'true'
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        if: env.HAS_ANTHROPIC_API_KEY == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

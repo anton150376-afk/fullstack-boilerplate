@@ -1,0 +1,26 @@
+{
+  "bugReport": {
+    "attachScreenshot": "Приложить снимок экрана",
+    "cancel": "Отмена",
+    "description": "Описание",
+    "expectedBehavior": "Ожидаемое поведение",
+    "screenshotAttached": "Снимок приложен",
+    "screenshotAttachedAuto": "Снимок экрана приложен автоматически",
+    "stepsToReproduce": "Шаги воспроизведения",
+    "submit": "Отправить",
+    "submitFailed": "Не удалось отправить отчёт",
+    "success": "Отчёт отправлен, спасибо!",
+    "title": "Сообщить о проблеме"
+  },
+  "upload": {
+    "confirming": "Подтверждение…",
+    "fileInput": "Файл для загрузки",
+    "networkUnavailable": "Сеть недоступна — хранилище не ответило",
+    "pickFile": "Выбрать файл",
+    "progress": "Прогресс загрузки",
+    "rejected": "Хранилище отклонило файл — проверьте тип и размер",
+    "rejectedWithCode": "Хранилище отклонило загрузку (код {{status}})",
+    "tooLarge": "Файл превышает допустимый размер",
+    "uploadFailed": "Загрузка не удалась"
+  }
+}

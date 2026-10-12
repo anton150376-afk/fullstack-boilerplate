@@ -1,0 +1,323 @@
+name: CI
+
+# Запускался в GitHub Actions с 2026-10-11 (docs/BACKLOG.md, B-261008-no-remote-repo):
+# gate, migrations, smoke, build, boundaries и e2e проходят. Задача compose
+# (запуск контейнеров) вскрыла дефекты compose и .env.example, их исправление проверяется.
+# Минуты Actions конечны, поэтому тяжёлая задача compose не идёт на pull request'ах.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # workflow_call — чтобы release.yml мог вызвать тот же гейт по тегу,
+  # не копировать его шаги (раздел "Фаза 10" задания: "гейт в CI и гейт
+  # у агента — физически один скрипт", то же самое — один workflow).
+  workflow_call:
+
+# fetch-depth: 0 обязателен (раздел 10.2 задания) — иначе turbo --affected
+# не находит базу сравнения и молча деградирует до полной пересборки.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Удалённый кеш Turborepo (раздел 10.2 задания) — пусто, если секреты
+  # не заданы: задачи просто пересобираются с нуля, без ошибки. Выбор
+  # поставщика (бесплатный кеш Vercel или свой) — ADR, не здесь.
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  gate:
+    name: gate (--full)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U app -d app"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+      redis:
+        image: redis:8-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Node + pnpm
+        uses: ./.github/actions/setup
+
+      # Garage — не через services: GitHub Actions не даёт передать
+      # command: сервисному контейнеру (ни в UI, ни в YAML — подтверждено
+      # обсуждением в самом GitHub Actions community, не предположение);
+      # без своих флагов (--single-node --default-bucket) образ запустит
+      # дефолтный ENTRYPOINT, не настоящий сервер. Поднимается руками.
+      # --default-bucket — флаг без значения: Garage v2.4.1 создаёт ключ и
+      # бакет из GARAGE_DEFAULT_* (исходники релиза, ServerOpt), поэтому ключ
+      # генерируется здесь на каждый запуск и отдаётся следующему шагу через
+      # outputs; отдельный шаг `garage key create` не нужен.
+      - name: Поднять Garage
+        id: garage
+        run: |
+          set -euo pipefail
+          KEY_ID="GK$(openssl rand -hex 12)"
+          SECRET="$(openssl rand -hex 32)"
+          echo "::add-mask::$SECRET"
+          docker run -d --name garage \
+            -p 127.0.0.1:3900:3900 -p 127.0.0.1:3901:3901 -p 127.0.0.1:3903:3903 \
+            -v "${{ github.workspace }}/infra/garage/garage.toml:/etc/garage.toml:ro" \
+            -e GARAGE_DEFAULT_ACCESS_KEY="$KEY_ID" \
+            -e GARAGE_DEFAULT_SECRET_KEY="$SECRET" \
+            -e GARAGE_DEFAULT_BUCKET=app-files \
+            dxflrs/garage:v2.4.1 \
+            /garage server --single-node --default-bucket
+          timeout 30 bash -c 'until docker exec garage /garage status >/dev/null 2>&1; do sleep 1; done'
+          echo "access-key-id=$KEY_ID" >> "$GITHUB_OUTPUT"
+          echo "secret-access-key=$SECRET" >> "$GITHUB_OUTPUT"
+
+      # Интеграционные тесты репозиториев (apps/server/test/db.integration-spec.ts)
+      # идут против базы сервиса и пропускаются без TEST_DATABASE_URL.
+      - name: prisma migrate deploy
+        working-directory: apps/server
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://app:app@localhost:5432/app
+
+      - name: pnpm gate --full
+        run: pnpm gate:full
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://app:app@localhost:5432/app
+          TEST_DATABASE_URL: postgresql://app:app@localhost:5432/app
+          REDIS_URL: redis://localhost:6379
+          S3_ENDPOINT: http://localhost:3900
+          S3_REGION: garage
+          S3_BUCKET: app-files
+          S3_ACCESS_KEY_ID: ${{ steps.garage.outputs.access-key-id }}
+          S3_SECRET_ACCESS_KEY: ${{ steps.garage.outputs.secret-access-key }}
+          S3_FORCE_PATH_STYLE: "true"
+
+  migrations:
+    name: migrations
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U app -d app"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      # Раздел "Фаза 7" задания, пункт 7.3: расхождение схемы и журнала
+      # миграций роняет сборку — ловит забытую генерацию миграции. В Prisma 7
+      # `migrate diff --from-migrations` требует datasource.shadowDatabaseUrl,
+      # поэтому сверка идёт через настоящую базу сервиса: применить миграции
+      # в чистую БД, затем сравнить БД со схемой (`--exit-code`: код 2, если
+      # расхождение есть). Ту же цепочку прошла первая миграция на Postgres в
+      # WebAssembly (PGlite), см. docs/BACKLOG.md, B-261008-no-prisma-migrations.
+      - name: prisma migrate deploy
+        working-directory: apps/server
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://app:app@localhost:5432/app
+      - name: prisma migrate diff --exit-code (миграции и схема совпадают)
+        working-directory: apps/server
+        run: npx prisma migrate diff --from-config-datasource --to-schema ./prisma/schema --exit-code
+        env:
+          DATABASE_URL: postgresql://app:app@localhost:5432/app
+      - name: prisma migrate status
+        working-directory: apps/server
+        run: npx prisma migrate status
+        env:
+          DATABASE_URL: postgresql://app:app@localhost:5432/app
+
+  # Дымовая проверка собранного сервера на настоящих Postgres и Redis: ровно та
+  # команда запуска, что в Docker-образе (node --conditions=compiled). Ловит то,
+  # чего не видят тесты с подменами и сборка: падение на импорте пакетов
+  # воркспейса, внедрение зависимостей, несовместимые параметры очереди, 500 на
+  # всех маршрутах. Скрипт scripts/smoke-api.sh проверен локально на PGlite и
+  # fakeredis; в GitHub Actions эта задача ещё не запускалась
+  # (docs/BACKLOG.md, B-261008-no-remote-repo).
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U app -d app"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+      redis:
+        image: redis:8-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+    env:
+      NODE_ENV: development
+      PORT: "3100"
+      DATABASE_URL: postgresql://app:app@localhost:5432/app
+      REDIS_URL: redis://localhost:6379
+      S3_ENDPOINT: http://localhost:3900
+      S3_REGION: garage
+      S3_BUCKET: app-files
+      S3_ACCESS_KEY_ID: GKsmoke00000000000000
+      S3_SECRET_ACCESS_KEY: smoke-secret-0123456789
+      LOG_LEVEL: info
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Сборка сервера вместе с пакетами воркспейса
+        run: pnpm turbo run build --filter=server
+      - name: prisma migrate deploy
+        working-directory: apps/server
+        run: npx prisma migrate deploy
+      - name: Запуск сервера
+        run: node --conditions=compiled apps/server/dist/main.js > server.log 2>&1 &
+      - name: Дымовая проверка
+        run: LOG_FILE=server.log bash scripts/smoke-api.sh
+      - name: Журнал сервера при сбое
+        if: failure()
+        run: tail -n 200 server.log
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+        env:
+          DATABASE_URL: postgresql://build:build@localhost:5432/build
+
+  boundaries:
+    name: boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      # Теги пакетов (turbo.json каждого приложения и пакета) и правила
+      # (корневой turbo.json) описаны в docs/architecture/monorepo.md. Тот же
+      # запуск есть в pnpm gate (check:boundaries); отдельная задача нужна
+      # ради читаемого статуса в pull request.
+      - run: npx turbo boundaries
+
+  # Запуск контейнеров целиком (docker-compose.yml): не только сборка образов
+  # (её делает docker.yml), а то, что стек поднимается, Garage создаёт ключ и
+  # бакет, миграции применяются, API отвечает, /health/ready реагирует на
+  # остановку Redis, веб отдаёт статику, а браузерные тесты проходят через
+  # контейнеры. Логика в scripts/compose-check.sh: её можно запустить и вручную
+  # на любой машине с Docker (pnpm compose:check).
+  compose:
+    name: compose (контейнеры)
+    # Не на pull request'ах (в том числе Dependabot): сборка четырёх образов и запуск
+    # стека — самая дорогая по минутам задача; образы и так собирает docker.yml.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Установить браузер Playwright
+        run: pnpm --filter web e2e:install
+      - name: Проверка контейнеров
+        run: WITH_E2E=1 bash scripts/compose-check.sh
+
+  e2e:
+    name: e2e (Playwright)
+    runs-on: ubuntu-latest
+    # Сквозные тесты в настоящем браузере (apps/web/e2e, docs/apps/web.md,
+    # раздел «Сквозные тесты»): задачи, заметки, язык, состояние системы и
+    # цепочка багрепорта. Playwright сам поднимает собранные API и веб
+    # (webServer в e2e/playwright.config.ts); нужны Postgres и Redis.
+    # Не входит в pnpm gate: нужен браузер и сервисные контейнеры.
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U app -d app"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+      redis:
+        image: redis:8-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+    env:
+      DATABASE_URL: postgresql://app:app@localhost:5432/app
+      REDIS_URL: redis://localhost:6379
+      S3_ENDPOINT: http://localhost:3900
+      S3_REGION: garage
+      S3_BUCKET: app-files
+      S3_ACCESS_KEY_ID: GKsmoke00000000000000
+      S3_SECRET_ACCESS_KEY: smoke-secret-0123456789
+      # Веб на :3001 обращается к API на :3000 из браузера — это другой адрес,
+      # поэтому нужен CORS (apps/server/src/common/cors.ts).
+      CORS_ORIGINS: http://localhost:3001
+      # Вшиваются в бандл веба при сборке: кнопка багрепорта включена, адрес API.
+      VITE_API_URL: http://localhost:3000
+      VITE_ENABLE_BUG_REPORTS: "true"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Установить браузер Playwright
+        run: pnpm --filter web e2e:install
+      - name: Сборка сервера и веба
+        run: pnpm turbo run build --filter=server --filter=web
+      - name: prisma migrate deploy
+        working-directory: apps/server
+        run: npx prisma migrate deploy
+      - name: Playwright
+        run: pnpm --filter web e2e
+      - name: Следы Playwright при сбое
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: apps/web/test-results
+          retention-days: 7

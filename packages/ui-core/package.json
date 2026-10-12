@@ -1,0 +1,29 @@
+{
+  "name": "@boilerplate/ui-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --cache --cache-location .eslintcache",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "class-variance-authority": "catalog:",
+    "cn": "catalog:"
+  },
+  "devDependencies": {
+    "@boilerplate/eslint-config": "workspace:*",
+    "@boilerplate/i18n": "workspace:*",
+    "@boilerplate/testing": "workspace:*",
+    "@boilerplate/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "10.12.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

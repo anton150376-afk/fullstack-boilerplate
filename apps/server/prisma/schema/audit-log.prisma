@@ -1,0 +1,16 @@
+/// Журнал действий (раздел "Фаза 8" задания, пункт 8.6) — запись со
+/// заглушкой актора ("system"): настоящего "кто" до модуля
+/// аутентификации взять негде, полноценная привязка к пользователю —
+/// отдельный пункт ROADMAP после M1.
+model AuditLogEntry {
+  id         String   @id @default(uuid())
+  actor      String
+  entity     String
+  entityId   String
+  action     String
+  occurredAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([occurredAt])
+  @@map("audit_log_entries")
+}

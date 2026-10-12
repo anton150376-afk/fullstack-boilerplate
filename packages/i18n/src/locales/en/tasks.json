@@ -1,0 +1,10 @@
+{
+  "addButton": "Add",
+  "count_one": "{{count}} task",
+  "count_other": "{{count}} tasks",
+  "doneLabel": "Done",
+  "emptyLabel": "No tasks yet",
+  "removeButton": "Delete",
+  "title": "Tasks",
+  "titleLabel": "Title"
+}

@@ -1,0 +1,41 @@
+{
+  "audit": {
+    "action": "Действие",
+    "actor": "Кто",
+    "empty": "Журнал пуст",
+    "entity": "Сущность",
+    "id": "ID",
+    "locale": "ru-RU",
+    "when": "Когда"
+  },
+  "form": {
+    "submit": "Сохранить"
+  },
+  "layout": {
+    "navigation": "Админка",
+    "systemStatus": "Состояние системы"
+  },
+  "pages": {
+    "email": "Email",
+    "forbiddenMessage": "У вас нет прав для просмотра этой страницы.",
+    "forbiddenTitle": "403 — Доступ запрещён",
+    "login": "Войти",
+    "loginTitle": "Вход",
+    "notFoundTitle": "404 — Страница не найдена",
+    "password": "Пароль"
+  },
+  "system": {
+    "buildVersion": "Версия сборки: {{version}}",
+    "loadFailed": "Не удалось получить состояние",
+    "loading": "Загрузка…",
+    "title": "Состояние системы"
+  },
+  "table": {
+    "empty": "Нет данных",
+    "loadFailed": "Не удалось загрузить данные",
+    "loading": "Загрузка…",
+    "next": "Далее",
+    "page": "Страница {{page}} из {{pageCount}} — всего {{rowCount}}",
+    "previous": "Назад"
+  }
+}

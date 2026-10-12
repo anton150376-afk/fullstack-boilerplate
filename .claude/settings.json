@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Write(.env)",
+      "Write(pnpm-lock.yaml)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(rm -rf *)"
+    ],
+    "ask": ["Bash(git push*)", "Bash(npm publish*)"],
+    "allow": [
+      "Read(**)",
+      "Bash(pnpm *)",
+      "Bash(npx *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(bash scripts/*)",
+      "Bash(tsx scripts/*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/done-gate.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/format-on-write.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

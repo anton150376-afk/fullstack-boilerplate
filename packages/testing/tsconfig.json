@@ -1,0 +1,7 @@
+{
+  "extends": "@boilerplate/typescript-config/node.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": ["src", "vitest.config.ts"]
+}

@@ -1,0 +1,11 @@
+/// Показательная сущность Фазы 4: минимальный срез
+/// контракт → контроллер → сервис → репозиторий → миграция → тест.
+model Note {
+  id        String   @id @default(uuid())
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
+}

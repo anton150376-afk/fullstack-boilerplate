@@ -1,0 +1,14 @@
+# Образец для раздела 7.9 задания: два человека — два набора контейнеров.
+# Скопировать в docker-compose.override.yml (в .gitignore, не коммитится)
+# и поменять порты и/или COMPOSE_PROJECT_NAME в своём .env.
+
+services:
+  postgres:
+    ports:
+      - "5433:5432"
+  redis:
+    ports:
+      - "6380:6379"
+  garage:
+    ports:
+      - "3910:3900"

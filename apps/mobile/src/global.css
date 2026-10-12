@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "uniwind";
+@import "@boilerplate/tailwind-config/theme.css";
+
+/* Классы из packages/ui-native и packages/ui-core — путями относительно
+   этого файла (раздел "Фаза 7" задания, пункт 3): @source не делает
+   резолюцию npm-пакетов, как @import. */
+@source "../../../packages/ui-native/src";
+@source "../../../packages/ui-core/src";

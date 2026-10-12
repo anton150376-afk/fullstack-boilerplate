@@ -1,0 +1,49 @@
+{
+  "name": "@boilerplate/testing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    "./presets/node": "./src/presets/node.ts",
+    "./presets/dom": "./src/presets/dom.ts",
+    "./setup/dom": "./src/setup/dom.ts",
+    "./factories": "./src/factories/index.ts",
+    "./mocks": "./src/mocks/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --cache --cache-location .eslintcache",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "catalog:",
+    "msw": "3.0.2"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@boilerplate/eslint-config": "workspace:*",
+    "@boilerplate/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "10.12.0",
+    "jsdom": "30.1.2",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

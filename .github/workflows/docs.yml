@@ -1,0 +1,82 @@
+name: Docs
+
+# Запускался в GitHub Actions с 2026-10-11, все три задачи проходят (docs/BACKLOG.md,
+# B-261008-no-remote-repo).
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "**/README.md"
+      - "scripts/check-docs.ts"
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "**/README.md"
+      - "scripts/check-docs.ts"
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - run: pnpm check:docs
+
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # ${{ }} — подстановка значения, не шелл: $(...) внутри неё не
+      # выполняется (это передалось бы в lychee буквальной строкой).
+      # Список изменённых файлов поэтому собирается отдельным bash-шагом
+      # заранее, а expression ниже просто выбирает между его выводом и
+      # полным docs/ (раздел "Фаза 10" задания, пункт 10.2: "--affected
+      # там, где это оправдано" — тот же принцип, не только для turbo).
+      - name: Список изменённых markdown-страниц
+        if: github.event_name == 'pull_request'
+        id: changed
+        run: |
+          FILES=$(git diff --name-only origin/main...HEAD -- docs '*.md' | tr '\n' ' ')
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+
+      - name: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --exclude-path .git
+            ${{ github.event_name == 'pull_request' && steps.changed.outputs.files || 'docs/**/*.md **/README.md' }}
+          fail: true
+
+  build-site:
+    needs: [check-docs]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      # apps/docs/scripts/generate.ts порождает docs/generated/ из
+      # репозитория (BACKLOG.md, ADR, env-vars.md, package.json'ы,
+      # OpenAPI-контракт) перед сборкой VitePress — раздел "Фаза 10"
+      # задания, пункт 10.3, docs/apps/docs.md. Без coverage/coverage-summary.json
+      # (сюда никто не запускал test:coverage) страница покрытия просто
+      # покажет заглушку — не ошибка.
+      - run: pnpm --filter docs-site build
+      - name: Загрузить артефакт сайта
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: apps/docs/.vitepress/dist
+          retention-days: 14
+      # Публикация сайта (раздел 10.3 задания) зависит от выбранного хостинга и его
+      # секретов — добавляется отдельным шагом (docs/apps/docs.md, «Публикация»).

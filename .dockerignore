@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/.output
+**/.turbo
+**/coverage
+.git
+.github
+.vscode
+docs
+*.md
+.env
+.env.*
+!.env.example
+.bugs

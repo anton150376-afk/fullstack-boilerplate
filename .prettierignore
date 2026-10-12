@@ -1,0 +1,12 @@
+node_modules
+dist
+.output
+.turbo
+coverage
+pnpm-lock.yaml
+apps/web/src/routeTree.gen.ts
+
+# Исходный текст задания храним вербатим, как он был получен.
+BOILERPLATE_TASK.md
+apps/web/test-results
+apps/web/playwright-report

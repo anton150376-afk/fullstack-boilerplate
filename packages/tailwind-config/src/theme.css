@@ -1,0 +1,179 @@
+/*
+ * Палитра ниже вычислена скриптом (см. docs/packages/tailwind-config.md,
+ * раздел "Как пересчитать палитру") по трём параметрам на семейство:
+ * тон (hue), пиковая хрома и кривая светлоты 50→950. Менять ступени
+ * руками не нужно — переменные в начале того скрипта задают всё семейство
+ * целиком. hex-зеркало в src/tokens.ts порождается ИЗ этого файла
+ * (scripts/generate-tokens.ts) и проверяется тестом src/tokens.test.ts —
+ * при ручной правке значений здесь мирор запускается заново.
+ */
+@theme {
+  --color-brand-50: oklch(0.98 0.0094 258);
+  --color-brand-100: oklch(0.95 0.019 258);
+  --color-brand-200: oklch(0.9 0.0418 258);
+  --color-brand-300: oklch(0.82 0.076 258);
+  --color-brand-400: oklch(0.72 0.1178 258);
+  --color-brand-500: oklch(0.62 0.1558 258);
+  --color-brand-600: oklch(0.52 0.1805 258);
+  --color-brand-700: oklch(0.44 0.1629 258);
+  --color-brand-800: oklch(0.36 0.133 258);
+  --color-brand-900: oklch(0.28 0.095 258);
+  --color-brand-950: oklch(0.2 0.0608 258);
+
+  --color-accent-50: oklch(0.98 0.0075 192);
+  --color-accent-100: oklch(0.95 0.015 192);
+  --color-accent-200: oklch(0.9 0.033 192);
+  --color-accent-300: oklch(0.82 0.06 192);
+  --color-accent-400: oklch(0.72 0.093 192);
+  --color-accent-500: oklch(0.62 0.1064 192);
+  --color-accent-600: oklch(0.52 0.0893 192);
+  --color-accent-700: oklch(0.44 0.0755 192);
+  --color-accent-800: oklch(0.36 0.0618 192);
+  --color-accent-900: oklch(0.28 0.048 192);
+  --color-accent-950: oklch(0.2 0.0343 192);
+
+  --color-neutral-50: oklch(0.98 0.0006 258);
+  --color-neutral-100: oklch(0.95 0.0012 258);
+  --color-neutral-200: oklch(0.9 0.0026 258);
+  --color-neutral-300: oklch(0.82 0.0048 258);
+  --color-neutral-400: oklch(0.72 0.0074 258);
+  --color-neutral-500: oklch(0.62 0.0098 258);
+  --color-neutral-600: oklch(0.52 0.0114 258);
+  --color-neutral-700: oklch(0.44 0.0106 258);
+  --color-neutral-800: oklch(0.36 0.0084 258);
+  --color-neutral-900: oklch(0.28 0.006 258);
+  --color-neutral-950: oklch(0.2 0.0038 258);
+
+  --color-success-50: oklch(0.98 0.008 142);
+  --color-success-100: oklch(0.95 0.016 142);
+  --color-success-200: oklch(0.9 0.0352 142);
+  --color-success-300: oklch(0.82 0.064 142);
+  --color-success-400: oklch(0.72 0.0992 142);
+  --color-success-500: oklch(0.62 0.1312 142);
+  --color-success-600: oklch(0.52 0.152 142);
+  --color-success-700: oklch(0.44 0.1408 142);
+  --color-success-800: oklch(0.36 0.112 142);
+  --color-success-900: oklch(0.28 0.08 142);
+  --color-success-950: oklch(0.2 0.0512 142);
+
+  --color-warning-50: oklch(0.98 0.008 70);
+  --color-warning-100: oklch(0.95 0.016 70);
+  --color-warning-200: oklch(0.9 0.0352 70);
+  --color-warning-300: oklch(0.82 0.064 70);
+  --color-warning-400: oklch(0.72 0.0992 70);
+  --color-warning-500: oklch(0.62 0.1312 70);
+  --color-warning-600: oklch(0.52 0.1126 70);
+  --color-warning-700: oklch(0.44 0.0953 70);
+  --color-warning-800: oklch(0.36 0.078 70);
+  --color-warning-900: oklch(0.28 0.0606 70);
+  --color-warning-950: oklch(0.2 0.0433 70);
+
+  --color-danger-50: oklch(0.98 0.0095 25);
+  --color-danger-100: oklch(0.95 0.019 25);
+  --color-danger-200: oklch(0.9 0.0418 25);
+  --color-danger-300: oklch(0.82 0.076 25);
+  --color-danger-400: oklch(0.72 0.1178 25);
+  --color-danger-500: oklch(0.62 0.1558 25);
+  --color-danger-600: oklch(0.52 0.1805 25);
+  --color-danger-700: oklch(0.44 0.1672 25);
+  --color-danger-800: oklch(0.36 0.133 25);
+  --color-danger-900: oklch(0.28 0.095 25);
+  --color-danger-950: oklch(0.2 0.0608 25);
+
+  /* Радиусы */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Типографика */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  /* Отступы (шаг 4px, как у Tailwind по умолчанию — переопределение не нужно,
+     но объявлено явно, чтобы шкала была видна рядом с остальными токенами) */
+  --spacing: 0.25rem;
+
+  /* Тени */
+  --shadow-sm: 0 1px 2px 0 oklch(0.2 0.0038 258 / 0.05);
+  --shadow-md: 0 4px 6px -1px oklch(0.2 0.0038 258 / 0.1);
+  --shadow-lg: 0 10px 15px -3px oklch(0.2 0.0038 258 / 0.1);
+}
+
+/*
+ * @theme регистрирует только статичные значения — светлая/тёмная тема
+ * нужна ЭТИМ токенам переключаемой по атрибуту data-theme, поэтому их
+ * настоящее значение живёт в обычных :root/:root[data-theme="dark"]
+ * (CSS-переменные без префикса color-, ниже), а здесь — только
+ * индирекция `var(--surface)` и так далее. Без неё Tailwind 4 не видит
+ * --color-surface/--color-border/--color-primary как токены темы и не
+ * порождает для них классы (bg-surface, border-border, bg-primary) —
+ * найдено настоящей сборкой (`pnpm build` в apps/web), не по
+ * документации: `@apply border-border` в base.css ниже упал с "unknown
+ * utility class", хотя переменная была объявлена и работала через var().
+ */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-accent-fg: var(--accent-fg);
+  --color-success-fg: var(--success-fg);
+  --color-warning-fg: var(--warning-fg);
+  --color-danger-fg: var(--danger-fg);
+}
+
+/*
+ * Семантические переменные ссылаются на шкалу палитры выше, а не вводят
+ * новые цвета — поэтому светлая и тёмная темы не дублируют значения.
+ * Тёмная тема переключается атрибутом `data-theme="dark"` на корневом
+ * элементе (см. docs/packages/styling.md).
+ */
+:root,
+:root[data-theme="light"] {
+  --surface: var(--color-neutral-50);
+  --surface-raised: white;
+  --border: var(--color-neutral-200);
+  --text: var(--color-neutral-900);
+  --text-muted: var(--color-neutral-600);
+
+  --primary: var(--color-brand-600);
+  --primary-hover: var(--color-brand-700);
+  --primary-foreground: white;
+
+  --accent-fg: var(--color-accent-700);
+  --success-fg: var(--color-success-700);
+  --warning-fg: var(--color-warning-700);
+  --danger-fg: var(--color-danger-700);
+}
+
+:root[data-theme="dark"] {
+  --surface: var(--color-neutral-950);
+  --surface-raised: var(--color-neutral-900);
+  --border: var(--color-neutral-800);
+  --text: var(--color-neutral-50);
+  --text-muted: var(--color-neutral-400);
+
+  --primary: var(--color-brand-400);
+  --primary-hover: var(--color-brand-300);
+  --primary-foreground: var(--color-neutral-950);
+
+  --accent-fg: var(--color-accent-300);
+  --success-fg: var(--color-success-300);
+  --warning-fg: var(--color-warning-300);
+  --danger-fg: var(--color-danger-300);
+}

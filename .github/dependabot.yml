@@ -1,0 +1,86 @@
+# Dependabot, не Renovate (раздел "Фаза 10" задания, пункт 10.2 — выбор
+# между ними отдан агенту): с февраля 2025 Dependabot сам умеет
+# pnpm-workspace.yaml и catalog-записи (GA), и не требует установки
+# отдельного GitHub App — для репозитория, у которого ещё нет ни
+# организации, ни живых участников (docs/BACKLOG.md, B-261008-no-remote-repo),
+# это меньше шагов настройки, чем Renovate.
+#
+# Проверено вживую 2026-10-11: после первого push Dependabot открыл pull request'ы.
+# Они же показали, что без правил ниже он предлагает обновления, которые ломают
+# выверенный набор версий (docs/architecture/versions.md): пакеты Expo SDK 57 берутся
+# из expo/bundledNativeModules.json, TypeScript закреплён решением D10, Node — 22.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    # Каталог версий (catalog:) — отдельный pull request, не попутно с
+    # функциональной работой (раздел "Фаза 7" задания, пункт 7.4): этот
+    # groups не нужен для разделения PR, Dependabot и так открывает один
+    # PR на экосистему за забег, здесь просто предел, чтобы не захлестнуть
+    # pull request'ами сразу после первого включения.
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    # Минорные и патч-обновления одним pull request'ом: каждый PR запускает полный CI,
+    # а минуты Actions конечны (за первые сутки набежало 18 PR и лимит закончился).
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    ignore:
+      # Версии React и нативных пакетов определяет Expo SDK: меняются только вместе с
+      # ним (expo-doctor, expo/bundledNativeModules.json). Отдельный bump ломает
+      # мобильное приложение и проверку peers.
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "jest-expo"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "@types/react"
+      - dependency-name: "@types/react-dom"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@react-native/*"
+      - dependency-name: "test-renderer"
+      - dependency-name: "react-test-renderer"
+      - dependency-name: "@testing-library/react-native"
+      - dependency-name: "metro-resolver"
+      # srvx закреплён той же версией, что у транзитивной зависимости TanStack Start
+      # (apps/web/server-entry.mjs). В 1.0 пропал serveStatic из srvx/static — веб не
+      # стартует; поймали сквозные тесты на pull request, остальные проверки были зелёными.
+      - dependency-name: "srvx"
+        update-types: ["version-update:semver-major"]
+      # Типы Jest той же ветки 29.x, что и рантайм внутри jest-expo (pnpm-workspace.yaml).
+      - dependency-name: "@types/jest"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 6.x закреплён решением D10 задания, Node — 22 LTS (engines, .nvmrc).
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: docker
+    directories:
+      - "/apps/server"
+      - "/apps/web"
+      - "/apps/mobile"
+    schedule:
+      interval: monthly
+    labels: ["dependencies", "docker"]
+    ignore:
+      # Образы на Node 22 LTS (engines, .nvmrc); следующую LTS выбираем сами, ADR.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "chore(deps)"

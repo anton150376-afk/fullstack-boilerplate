@@ -1,0 +1,46 @@
+{
+  "name": "@boilerplate/admin-kit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --cache --cache-location .eslintcache",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@base-ui/react": "catalog:",
+    "@boilerplate/ui-core": "workspace:*",
+    "@boilerplate/ui-web": "workspace:*",
+    "@hookform/resolvers": "catalog:",
+    "@tanstack/react-table": "catalog:",
+    "class-variance-authority": "catalog:",
+    "react-hook-form": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@boilerplate/eslint-config": "workspace:*",
+    "@boilerplate/i18n": "workspace:*",
+    "@boilerplate/testing": "workspace:*",
+    "@boilerplate/typescript-config": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

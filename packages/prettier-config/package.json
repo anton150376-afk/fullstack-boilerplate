@@ -1,0 +1,17 @@
+{
+  "name": "@boilerplate/prettier-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "dependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "4.7.1"
+  },
+  "peerDependencies": {
+    "prettier": "^3.9.0"
+  }
+}

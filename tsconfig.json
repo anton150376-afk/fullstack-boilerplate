@@ -1,0 +1,8 @@
+{
+  "extends": "./packages/typescript-config/node.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["scripts/**/*.ts", "vitest.config.ts", "turbo.json"],
+  "exclude": ["node_modules", "**/dist", "**/.output"]
+}

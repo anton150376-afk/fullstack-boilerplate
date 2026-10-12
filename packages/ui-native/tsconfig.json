@@ -1,0 +1,7 @@
+{
+  "extends": "@boilerplate/typescript-config/react-native.json",
+  "compilerOptions": {
+    "types": ["jest"]
+  },
+  "include": ["src", "jest.config.js", "uniwind-env.d.ts"]
+}

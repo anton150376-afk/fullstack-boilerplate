@@ -1,0 +1,41 @@
+{
+  "audit": {
+    "action": "Action",
+    "actor": "Who",
+    "empty": "The log is empty",
+    "entity": "Entity",
+    "id": "ID",
+    "locale": "en-US",
+    "when": "When"
+  },
+  "form": {
+    "submit": "Save"
+  },
+  "layout": {
+    "navigation": "Admin",
+    "systemStatus": "System status"
+  },
+  "pages": {
+    "email": "Email",
+    "forbiddenMessage": "You do not have permission to view this page.",
+    "forbiddenTitle": "403 — Access denied",
+    "login": "Sign in",
+    "loginTitle": "Sign in",
+    "notFoundTitle": "404 — Page not found",
+    "password": "Password"
+  },
+  "system": {
+    "buildVersion": "Build version: {{version}}",
+    "loadFailed": "Failed to get the status",
+    "loading": "Loading…",
+    "title": "System status"
+  },
+  "table": {
+    "empty": "No data",
+    "loadFailed": "Failed to load data",
+    "loading": "Loading…",
+    "next": "Next",
+    "page": "Page {{page}} of {{pageCount}} — {{rowCount}} total",
+    "previous": "Back"
+  }
+}

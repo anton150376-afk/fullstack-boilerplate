@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "vitest.explorer",
+    "expo.vscode-expo-tools",
+    "ms-azuretools.vscode-docker",
+    "editorconfig.editorconfig",
+    "usernamehw.errorlens",
+    "anthropic.claude-code"
+  ]
+}

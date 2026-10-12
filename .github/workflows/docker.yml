@@ -1,0 +1,85 @@
+name: Docker
+
+# Сборка всех четырёх образов проверена в CI 2026-10-11. Запуск контейнеров вживую
+# не проверялся (docs/BACKLOG.md, B-261008-docker-unverified).
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_call:
+
+concurrency:
+  group: docker-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      # Один упавший образ не отменяет остальные: первый запуск в CI показал,
+      # что без этого сообщает о себе только первая упавшая сборка.
+      fail-fast: false
+      matrix:
+        # target — только у apps/server (api/worker, раздел "Фаза 10"
+        # задания, пункт 10.1); apps/web и apps/mobile — по одному
+        # образу каждый, name здесь совпадает с target внутри Dockerfile.
+        include:
+          - app: server
+            dockerfile: apps/server/Dockerfile
+            target: api
+            image: server-api
+          - app: server
+            dockerfile: apps/server/Dockerfile
+            target: worker
+            image: server-worker
+          - app: web
+            dockerfile: apps/web/Dockerfile
+            target: web
+            image: web
+          - app: mobile
+            dockerfile: apps/mobile/Dockerfile
+            target: mobile-web
+            image: mobile-web
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Войти в GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Метаданные образа
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Собрать и опубликовать
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Кеш слоёв через сам реестр (gha-кеш actions/cache тут не
+          # нужен, раздел "Фаза 10" задания, пункт 10.2 — тот же принцип
+          # "кеширование отдать специализированному механизму", что у
+          # Turborepo, здесь это кеш реестра, встроенный в сам build-push).
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/${{ matrix.image }}:buildcache,mode=max

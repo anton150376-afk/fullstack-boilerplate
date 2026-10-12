@@ -1,0 +1,11 @@
+/// Идемпотентность задач очереди (раздел "Фаза 4" задания, пункт 5):
+/// ключ записывается в Postgres в одной транзакции с побочным эффектом
+/// задачи. Повторная обработка той же задачи — ключ уже есть, эффект не
+/// повторяется.
+model ProcessedJob {
+  idempotencyKey String   @id
+  jobName        String
+  processedAt    DateTime @default(now())
+
+  @@map("processed_jobs")
+}

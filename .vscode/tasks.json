@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "gate",
+      "type": "shell",
+      "command": "pnpm verify",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: всё",
+      "type": "shell",
+      "command": "pnpm dev",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: server",
+      "type": "shell",
+      "command": "pnpm --filter server dev",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: web",
+      "type": "shell",
+      "command": "pnpm --filter web dev",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "dev: mobile",
+      "type": "shell",
+      "command": "pnpm --filter mobile start",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "test: watch",
+      "type": "shell",
+      "command": "pnpm test:watch",
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "lint: fix",
+      "type": "shell",
+      "command": "pnpm lint:fix",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: up",
+      "type": "shell",
+      "command": "pnpm docker:up",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: down",
+      "type": "shell",
+      "command": "pnpm docker:down",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "db: migrate",
+      "type": "shell",
+      "command": "pnpm --filter server db:migrate",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "docs: check",
+      "type": "shell",
+      "command": "pnpm check:docs",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

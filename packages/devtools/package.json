@@ -1,0 +1,40 @@
+{
+  "name": "@boilerplate/devtools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "compiled": "./dist/index.js",
+      "default": "./src/index.ts"
+    },
+    "./receivers": {
+      "types": "./src/receivers/index.ts",
+      "compiled": "./dist/receivers/index.js",
+      "default": "./src/receivers/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint . --cache --cache-location .eslintcache",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@boilerplate/api-client": "workspace:*"
+  },
+  "peerDependencies": {
+    "@tanstack/query-core": ">=5.80.2"
+  },
+  "devDependencies": {
+    "@boilerplate/eslint-config": "workspace:*",
+    "@boilerplate/typescript-config": "workspace:*",
+    "@tanstack/query-core": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "10.12.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

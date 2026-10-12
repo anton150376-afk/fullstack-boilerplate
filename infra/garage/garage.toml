@@ -1,0 +1,27 @@
+# Конфигурация Garage для локальной разработки (Фаза 4 задания, решение
+# D16: S3-совместимое хранилище вместо MinIO — см. ADR-0001, грабля 28
+# задания). Один узел, один дефолтный бакет — не для продакшена.
+#
+# Секреты ниже — для локальной машины разработчика, не для шаринга и не
+# для продакшена; при компрометации просто сгенерировать новые:
+# `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+
+metadata_dir = "/data/meta"
+data_dir = "/data/blocks"
+db_engine = "sqlite"
+
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+rpc_secret = "5d7489525165c0ae9506c5d46828538274078b064e11a87b364d390e6cdeaee5"
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+root_domain = ".s3.garage.localhost"
+
+[admin]
+api_bind_addr = "[::]:3903"
+admin_token = "vS17zn5KmG5tbQB/6Ah7oQnJiIYXj8FxXxpJcTU7weg="
+metrics_token = "mrVpm9h7H2Pz/JvoDBCH9kLdz+GWqzdMJsYlGgCYtZU="

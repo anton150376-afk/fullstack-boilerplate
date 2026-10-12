@@ -1,0 +1,64 @@
+name: Mobile
+
+# Непроверено вживую (docs/BACKLOG.md, B-261008-no-remote-repo).
+
+on:
+  pull_request:
+    paths:
+      - "apps/mobile/**"
+      - "packages/ui-native/**"
+      - "packages/ui-core/**"
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Нативная платформа для сборки EAS
+        required: true
+        type: choice
+        options: [ios, android]
+
+concurrency:
+  group: mobile-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-export:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter mobile build:web
+        env:
+          EXPO_PUBLIC_API_URL: https://api.example.test
+      - name: Загрузить артефакт веб-экспорта
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-web-export
+          path: apps/mobile/dist
+          retention-days: 14
+
+  eas-build:
+    # Нативная сборка — только по ручному запуску (раздел "Фаза 10"
+    # задания, пункт 10.2: "заготовка под EAS"). EAS_TOKEN не задан ни
+    # разу в этой сессии — шаг ниже не сделает полезной работы без
+    # секрета, но и не должен падать форкам/PR без него (claude.yml —
+    # тот же принцип "все шаги условны по наличию секрета").
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    # Контекст secrets недоступен в `if` — наличие токена передаётся через env
+    # (иначе GitHub отвергает файл целиком).
+    env:
+      HAS_EAS_TOKEN: ${{ secrets.EAS_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: EAS CLI
+        if: env.HAS_EAS_TOKEN == 'true'
+        env:
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+        run: |
+          npx eas-cli build --platform ${{ inputs.platform }} --non-interactive --no-wait
+        working-directory: apps/mobile
+      - name: Пропущено — EAS_TOKEN не задан
+        if: env.HAS_EAS_TOKEN != 'true'
+        run: echo "EAS_TOKEN отсутствует в секретах репозитория — нативная сборка пропущена"

@@ -1,0 +1,11 @@
+{
+  "addButton": "Add",
+  "bodyLabel": "Body",
+  "count_one": "{{count}} note",
+  "count_other": "{{count}} notes",
+  "emptyLabel": "No notes yet",
+  "hideForm": "Hide form",
+  "removeButton": "Delete",
+  "title": "Notes",
+  "titleLabel": "Title"
+}

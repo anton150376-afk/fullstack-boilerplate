@@ -1,0 +1,28 @@
+# Назначает ревьюера по пакету/приложению (раздел "Фаза 10" задания,
+# пункт 10.2). @owner-placeholder — замена на настоящие GitHub-логины
+# или команды нужна до первого реального pull request; этот репозиторий
+# пока без организации и живых участников (docs/BACKLOG.md,
+# B-261008-no-remote-repo) — имена ниже условны, не придуманы как
+# настоящие аккаунты.
+
+* @owner-placeholder
+
+/apps/server/      @owner-placeholder
+/apps/web/         @owner-placeholder
+/apps/mobile/      @owner-placeholder
+
+# Изменение контракта требует согласования с клиентом и документацией —
+# тот же принцип, что у жёсткого правила гейта (scripts/done-gate.sh):
+# packages/contract без правки docs/ роняет сборку.
+/packages/contract/      @owner-placeholder
+/packages/api-client/    @owner-placeholder
+/packages/ui-core/       @owner-placeholder
+/packages/ui-web/        @owner-placeholder
+/packages/ui-native/     @owner-placeholder
+/packages/admin-kit/     @owner-placeholder
+/packages/devtools/      @owner-placeholder
+/packages/storage/       @owner-placeholder
+/packages/i18n/          @owner-placeholder
+
+/.github/          @owner-placeholder
+/docs/BACKLOG.md   @owner-placeholder

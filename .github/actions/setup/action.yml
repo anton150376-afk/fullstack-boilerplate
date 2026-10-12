@@ -1,0 +1,31 @@
+name: Setup
+description: >
+  Node + pnpm и зависимости монорепозитория, с кешем хранилища pnpm.
+  Не делает checkout — вызывающий workflow сам решает fetch-depth.
+
+runs:
+  using: composite
+  steps:
+    # pnpm/setup, не pnpm/action-setup + actions/setup-node: начиная с
+    # pnpm 11 (packageManager в корневом package.json — pnpm@11.28.5)
+    # pnpm/action-setup не поддерживается, его README отсылает к этому
+    # новому действию. version не указан — берётся из "packageManager",
+    # cache: true — кеш хранилища pnpm встроен в само действие, отдельный
+    # actions/cache не нужен (раздел "Фаза 10" задания, пункт 10.2:
+    # "кеширование задач отдать Turborepo, не собирать ключи руками" —
+    # тот же принцип применён и здесь, для кеша зависимостей).
+    #
+    # Непроверено вживую: у этого действия нет GitHub Actions раннера на
+    # машине, писавшей этот workflow (нет git remote вообще, см.
+    # docs/BACKLOG.md, B-261008-no-remote-repo). Версии действий ниже
+    # проверены веб-поиском на момент написания, не прогоном.
+    - name: Установить pnpm и Node
+      uses: pnpm/setup@v1
+      with:
+        runtime: node@22
+        install: false
+        cache: true
+
+    - name: Установить зависимости
+      shell: bash
+      run: pnpm install --frozen-lockfile

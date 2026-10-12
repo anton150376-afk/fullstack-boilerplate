@@ -1,0 +1,11 @@
+{
+  "bytes_few": "{{count}} байта",
+  "bytes_many": "{{count}} байт",
+  "bytes_one": "{{count}} байт",
+  "bytes_other": "{{count}} байта",
+  "count_few": "{{count}} файла",
+  "count_many": "{{count}} файлов",
+  "count_one": "{{count}} файл",
+  "count_other": "{{count}} файла",
+  "title": "Файлы"
+}
