@@ -46,7 +46,7 @@ jobs:
             target: mobile-web
             image: mobile-web
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Buildx
         uses: docker/setup-buildx-action@v3

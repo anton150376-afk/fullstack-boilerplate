@@ -38,7 +38,7 @@ jobs:
       issues: write
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: env.HAS_ANTHROPIC_API_KEY == 'true'
         with:
           fetch-depth: 1
