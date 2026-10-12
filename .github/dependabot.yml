@@ -47,10 +47,10 @@ updates:
       - dependency-name: "@testing-library/react-native"
       - dependency-name: "metro-resolver"
       # srvx закреплён той же версией, что у транзитивной зависимости TanStack Start
-      # (apps/web/server-entry.mjs). В 1.0 пропал serveStatic из srvx/static — веб не
-      # стартует; поймали сквозные тесты на pull request, остальные проверки были зелёными.
+      # (apps/web/server-entry.mjs). Уже в 0.12 и в 1.0 пропал serveStatic из srvx/static —
+      # веб не стартует; оба раза поймали сквозные тесты на pull request, остальные проверки
+      # были зелёными. Обновляется только вместе с TanStack Start и с правкой server-entry.mjs.
       - dependency-name: "srvx"
-        update-types: ["version-update:semver-major"]
       # Типы Jest той же ветки 29.x, что и рантайм внутри jest-expo (pnpm-workspace.yaml).
       - dependency-name: "@types/jest"
         update-types: ["version-update:semver-major"]
