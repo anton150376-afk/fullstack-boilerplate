@@ -10,7 +10,7 @@
 # Образ собран и запущен в составе docker-compose.yml: страница отдаётся, статика
 # клиента отдаётся, браузерные тесты проходят (Codespace, 2026-10-12).
 
-FROM node:22.22-slim AS base
+FROM node:22.23-slim AS base
 RUN corepack enable
 WORKDIR /app
 
