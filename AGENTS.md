@@ -28,6 +28,9 @@ This block is written and re-added by `turbo` before repository-scoped commands 
    описывает.
 5. Решение с альтернативами — ADR в `docs/architecture/decisions/`, по
    шаблону `TEMPLATE.md`.
+6. Перед новой функцией, модулем или зависимостью: сначала основа, потом
+   GitHub, находку согласовать с владельцем, и только затем писать свой код
+   (`.claude/rules/reuse-first.md`).
 
 ## Карта репозитория
 
@@ -77,8 +80,9 @@ pnpm --filter <pkg> <script>   # команда одного пакета, на�
 `server.md` (апи), `contract.md` (контракт), `client.md` (клиент и
 приложения), `ui.md` (компоненты), `i18n.md` (локализация), `admin.md`
 (админка), `storage.md` (файлы), `queues.md` (очереди), `tests.md`
-(тесты), `docs.md` (документация), `git.md` (коммиты и ветки, без
-ограничения по `paths`).
+(тесты), `docs.md` (документация), `git.md` (коммиты и ветки) и
+`reuse-first.md` (сначала основа и GitHub, потом свой код); последние два —
+без ограничения по `paths`.
 
 ## Когда неопределённость
 
