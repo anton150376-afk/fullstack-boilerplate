@@ -83,6 +83,10 @@
 | [M6-development.md](modules/M6-development.md)     | Развитие заложенного (журнал действий, файлы, отзывы) |
 | [M7-misc.md](modules/M7-misc.md)                   | Прочие отложенные решения                             |
 
+## HANDOFF.md
+
+[HANDOFF.md](HANDOFF.md) — карточка состояния перед сжатием диалога или новой сессией.
+
 ## BACKLOG.md
 
 [BACKLOG.md](BACKLOG.md) — остаток работ и риски, обнаруженные в процессе.
