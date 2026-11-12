@@ -19,7 +19,7 @@
     "@boilerplate/eslint-config": "workspace:*",
     "@boilerplate/typescript-config": "workspace:*",
     "@types/node": "catalog:",
-    "eslint": "10.12.0",
+    "eslint": "10.13.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

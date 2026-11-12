@@ -26,39 +26,39 @@ catalog:
   tsx: 4.23.15
 
   # Zod — контракт и валидация
-  zod: 4.6.5
+  zod: 4.6.7
 
   # Vitest
-  vitest: 5.0.3
-  "@vitest/coverage-v8": 5.0.3
+  vitest: 5.0.5
+  "@vitest/coverage-v8": 5.0.5
 
   # Tailwind
   tailwindcss: 4.3.3
 
   # TanStack
-  "@tanstack/react-query": 5.104.1
-  "@tanstack/react-router": 1.170.41
-  "@tanstack/react-start": 1.168.60
+  "@tanstack/react-query": 5.105.0
+  "@tanstack/react-router": 1.170.46
+  "@tanstack/react-start": 1.169.4
   "@tanstack/react-router-ssr-query": 1.167.3
-  "@tanstack/react-table": 9.2.8
+  "@tanstack/react-table": 9.3.1
   # packages/admin-kit (Фаза 8) — @hookform/resolvers добавил поддержку
   # Zod 4 в резолверы сам автор Zod.
-  react-hook-form: 7.89.0
+  react-hook-form: 7.91.0
   "@hookform/resolvers": 5.9.1
-  "@tanstack/eslint-plugin-query": 5.104.1
+  "@tanstack/eslint-plugin-query": 5.105.0
 
   # oRPC — стабильная ветка v1 (D4, ADR-0001)
-  "@orpc/client": 1.15.5
-  "@orpc/contract": 1.15.5
-  "@orpc/server": 1.15.5
-  "@orpc/nest": 1.15.5
-  "@orpc/openapi": 1.15.5
-  "@orpc/tanstack-query": 1.15.5
-  "@orpc/zod": 1.15.5
+  "@orpc/client": 1.16.1
+  "@orpc/contract": 1.16.1
+  "@orpc/server": 1.16.1
+  "@orpc/nest": 1.16.1
+  "@orpc/openapi": 1.16.1
+  "@orpc/tanstack-query": 1.16.1
+  "@orpc/zod": 1.16.1
 
   # Локализация — общий пакет packages/i18n для веба, мобильного и сервера
-  i18next: 26.4.2
-  react-i18next: 17.0.16
+  i18next: 26.5.11
+  react-i18next: 17.1.9
 
   # Прочее, используемое несколькими пакетами
   culori: 4.0.2
@@ -67,26 +67,26 @@ catalog:
   # Трассировка (apps/server, Фаза 4, пункт 9) — только стабильное ядро
   # 2.x (D12, ADR-0001); экспортёры и автоинструментации остаются 0.x и
   # сюда намеренно не добавлены.
-  "@opentelemetry/api": 1.9.1
+  "@opentelemetry/api": 1.10.0
   "@opentelemetry/sdk-trace-node": 2.12.0
   "@opentelemetry/resources": 2.12.0
   "@opentelemetry/context-async-hooks": 2.12.0
-  "@orpc/openapi-client": 1.15.5
-  "@tanstack/query-core": 5.104.1
-  vite: 8.3.4
+  "@orpc/openapi-client": 1.16.1
+  "@tanstack/query-core": 5.105.0
+  vite: 8.3.5
   "@vitejs/plugin-react": 6.1.2
-  eslint: 10.12.0
+  eslint: 10.13.0
   "@tailwindcss/vite": 4.3.3
-  shadcn: 4.21.4
+  shadcn: 4.23.0
   prettier-plugin-tailwindcss: 0.8.1
   class-variance-authority: 0.7.1
-  cn: 0.4.0
+  cn: 0.5.0
   tw-animate-css: 1.4.0
   "@base-ui/react": 1.9.0
   "@fontsource-variable/geist": 5.3.0
   "@testing-library/react": 16.3.3
   "@testing-library/jest-dom": 7.0.1
-  jsdom: 30.1.2
+  jsdom: 30.1.3
   srvx: 0.11.22
 
   # apps/server, Фаза 4/5 (найдено гейтом test:coverage в Фазе 6, не по
@@ -96,7 +96,7 @@ catalog:
   # вместо нужного провайдера. unplugin-swc — официально рекомендуемая
   # Nest заменой транспайлера для Jest/Vitest (см. docs/apps/server.md).
   "unplugin-swc": 2.0.0
-  "@swc/core": 1.16.13
+  "@swc/core": 1.16.20
   # Запуск сервера в разработке и воркера: tsx (esbuild) не генерирует метаданные
   # декораторов, и внедрение зависимостей Nest ломается (undefined вместо
   # провайдера). @swc-node/register транспилирует через swc с метаданными.
@@ -134,12 +134,12 @@ catalog:
   "react-native-view-shot": 5.1.0
   "react-native-web": 0.21.2
   "react-test-renderer": 19.2.3
-  uniwind: 1.12.2
+  uniwind: 1.13.1
   # Hermes на этой версии не содержит Intl.PluralRules — без полифила
   # i18next молча разрешает только английские формы (раздел "Фаза 7"
   # задания, пункт 6). Импортируются из точек входа /polyfill-force.
   "@formatjs/intl-locale": 5.3.12
-  "@formatjs/intl-pluralrules": 6.3.15
+  "@formatjs/intl-pluralrules": 6.3.16
   "jest-expo": 57.0.5
   "@testing-library/react-native": 14.1.0
   # Peer-зависимость @testing-library/react-native 14: без явной версии pnpm
@@ -159,10 +159,10 @@ catalog:
   # зависимость vitepress в этом сценарии без явного объявления здесь
   # (найдено настоящей сборкой, не угадано).
   vitepress: 1.6.4
-  vue: 3.5.43
+  vue: 3.5.44
   # apps/web/e2e: сквозные тесты в настоящем браузере (docs/apps/web.md).
   # Браузеры ставятся отдельно: npx playwright install chromium.
-  "@playwright/test": 1.64.0
+  "@playwright/test": 1.64.1
 
 # Пакетам с postinstall-скриптами сборка разрешается явно по имени.
 # esbuild — транзитивная зависимость vite/vitest; prisma/@prisma/engines —
