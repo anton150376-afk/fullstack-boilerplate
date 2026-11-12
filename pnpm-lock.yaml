@@ -262,8 +262,8 @@ catalogs:
       specifier: 3.5.43
       version: 3.5.43
     zod:
-      specifier: 4.6.5
-      version: 4.6.5
+      specifier: 4.6.6
+      version: 4.6.6
 
 importers:
 
@@ -322,7 +322,7 @@ importers:
         version: 1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0)
       '@orpc/zod':
         specifier: 'catalog:'
-        version: 1.15.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.15.5(@opentelemetry/api@1.9.1))(@orpc/server@1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0))(ws@8.22.0)(zod@4.6.5)
+        version: 1.15.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.15.5(@opentelemetry/api@1.9.1))(@orpc/server@1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0))(ws@8.22.0)(zod@4.6.6)
       vitepress:
         specifier: 'catalog:'
         version: 1.6.4(@algolia/client-search@5.59.0)(@types/node@22.20.5)(lightningcss@1.33.0)(postcss@8.5.29)(search-insights@2.17.3)(terser@5.51.2)(typescript@6.0.3)
@@ -543,7 +543,7 @@ importers:
         version: 1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0)
       '@orpc/zod':
         specifier: 'catalog:'
-        version: 1.15.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.15.5(@opentelemetry/api@1.9.1))(@orpc/server@1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0))(ws@8.22.0)(zod@4.6.5)
+        version: 1.15.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.15.5(@opentelemetry/api@1.9.1))(@orpc/server@1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0))(ws@8.22.0)(zod@4.6.6)
       '@prisma/adapter-pg':
         specifier: 7.10.0
         version: 7.10.0
@@ -579,7 +579,7 @@ importers:
         version: 0.2.2
       zod:
         specifier: 'catalog:'
-        version: 4.6.5
+        version: 4.6.6
     devDependencies:
       '@boilerplate/eslint-config':
         specifier: workspace:*
@@ -764,7 +764,7 @@ importers:
         version: link:../ui-web
       '@hookform/resolvers':
         specifier: 'catalog:'
-        version: 5.9.1(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1)(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.89.0(@types/react@19.2.18)(react@19.2.3))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.5)
+        version: 5.9.1(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1)(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.89.0(@types/react@19.2.18)(react@19.2.3))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.6)
       '@tanstack/react-table':
         specifier: 'catalog:'
         version: 9.2.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -776,7 +776,7 @@ importers:
         version: 7.89.0(@types/react@19.2.18)(react@19.2.3)
       zod:
         specifier: 'catalog:'
-        version: 4.6.5
+        version: 4.6.6
     devDependencies:
       '@boilerplate/eslint-config':
         specifier: workspace:*
@@ -874,7 +874,7 @@ importers:
         version: 1.15.5(@opentelemetry/api@1.9.1)
       zod:
         specifier: 'catalog:'
-        version: 4.6.5
+        version: 4.6.6
     devDependencies:
       '@boilerplate/eslint-config':
         specifier: workspace:*
@@ -3196,12 +3196,14 @@ packages:
   '@opentelemetry/sdk-trace-base@2.12.0':
     resolution: {integrity: sha512-JOERgZCxRM06FEJ5kEWxlSRChah6MmXDx3KwCruqEv/iEyLkTokCSemf2y1w8oIHtfrr8EVTpzebq/31vn2Cpg==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-node@2.12.0':
     resolution: {integrity: sha512-9DufH1IlmQMoKAfot5y/FhTP1RnmhLb5K6eKmJO/bvzPjYwPAazoiAUbTZFdPbqxOXN0FEbhZx/e6SB1Og4jmg==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
@@ -4162,6 +4164,7 @@ packages:
   '@smithy/core@3.35.1':
     resolution: {integrity: sha512-i4YPS4B6ts7bjn7UwLnGjiZdprOvHvgGobFZsYK3GIY3E5hIqtj0rReU69BcTpGp+fvtraSNXeG1l+jtJvF55w==}
     engines: {node: '>=18.0.0'}
+    deprecated: Deprecated due to a bug in custom logger data redaction. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
 
   '@smithy/credential-provider-imds@4.5.2':
     resolution: {integrity: sha512-A9uSdn72ozbRUSit0eib0TW7nXuNPlaeM0zcGkJ+nE6tFcSDbnmtwoxbTCFBukVQcszDAyvsd7+rTduPTXpygg==}
@@ -10505,8 +10508,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -12133,7 +12136,7 @@ snapshots:
     dependencies:
       hono: 4.13.13
 
-  '@hookform/resolvers@5.9.1(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1)(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.89.0(@types/react@19.2.18)(react@19.2.3))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.5)':
+  '@hookform/resolvers@5.9.1(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1)(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.89.0(@types/react@19.2.18)(react@19.2.3))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.6)':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.89.0(@types/react@19.2.18)(react@19.2.3)
@@ -12144,7 +12147,7 @@ snapshots:
       ajv-formats: 2.1.1
       effect: 3.20.0
       valibot: 1.4.2(typescript@6.0.3)
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -12861,7 +12864,7 @@ snapshots:
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/zod@1.15.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.15.5(@opentelemetry/api@1.9.1))(@orpc/server@1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0))(ws@8.22.0)(zod@4.6.5)':
+  '@orpc/zod@1.15.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.15.5(@opentelemetry/api@1.9.1))(@orpc/server@1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0))(ws@8.22.0)(zod@4.6.6)':
     dependencies:
       '@orpc/contract': 1.15.5(@opentelemetry/api@1.9.1)
       '@orpc/json-schema': 1.15.5(@opentelemetry/api@1.9.1)(ws@8.22.0)
@@ -12870,7 +12873,7 @@ snapshots:
       '@orpc/shared': 1.15.5(@opentelemetry/api@1.9.1)
       escape-string-regexp: 5.0.0
       wildcard-match: 5.1.6
-      zod: 4.6.5
+      zod: 4.6.6
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - crossws
@@ -14027,7 +14030,7 @@ snapshots:
       jiti: 2.7.0
       magic-string: 0.30.21
       prettier: 3.9.9
-      zod: 4.6.5
+      zod: 4.6.6
     transitivePeerDependencies:
       - supports-color
 
@@ -14041,7 +14044,7 @@ snapshots:
       '@tanstack/router-utils': 1.162.3(supports-color@8.1.1)
       chokidar: 5.0.0
       unplugin: 3.4.0(esbuild@0.28.2)(rolldown@1.2.12)(rollup@4.64.1)(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
-      zod: 4.6.5
+      zod: 4.6.6
     optionalDependencies:
       '@tanstack/react-router': 1.170.41(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       vite: 8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
@@ -14104,7 +14107,7 @@ snapshots:
       ufo: 1.6.4
       vitefu: 1.1.3(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
       xmlbuilder2: 4.0.3
-      zod: 4.6.5
+      zod: 4.6.6
     optionalDependencies:
       vite: 8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
     transitivePeerDependencies:
@@ -16120,8 +16123,8 @@ snapshots:
       '@babel/parser': 7.29.9
       eslint: 10.12.0(jiti@2.7.0)(supports-color@8.1.1)
       hermes-parser: 0.25.1
-      zod: 4.6.5
-      zod-validation-error: 4.0.2(zod@4.6.5)
+      zod: 4.6.6
+      zod-validation-error: 4.0.2(zod@4.6.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -20992,12 +20995,12 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  zod-validation-error@4.0.2(zod@4.6.5):
+  zod-validation-error@4.0.2(zod@4.6.6):
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.6
 
   zod@3.25.76: {}
 
-  zod@4.6.5: {}
+  zod@4.6.6: {}
 
   zwitch@2.0.4: {}
