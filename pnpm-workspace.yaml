@@ -44,7 +44,7 @@ catalog:
   # packages/admin-kit (Фаза 8) — @hookform/resolvers добавил поддержку
   # Zod 4 в резолверы сам автор Zod.
   react-hook-form: 7.89.0
-  "@hookform/resolvers": 5.9.1
+  "@hookform/resolvers": 6.0.2
   "@tanstack/eslint-plugin-query": 5.104.1
 
   # oRPC — стабильная ветка v1 (D4, ADR-0001)
